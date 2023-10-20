@@ -1,5 +1,5 @@
 //elite pixel game ente header file
-
+//todoooooo: decription
 //todo : implement  setlayer() for additional "user" layer[1,2,3] and stuff
 //todo : come up with a rendering scheme/funtion interface that serves the purpose. wat?
 

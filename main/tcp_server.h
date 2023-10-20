@@ -1,3 +1,9 @@
+//tcp server copy-paste boilerplate stuff
+//creates socket
+//bind,listen
+//call elite_shell_construct(); on socket.accept()
+//then loop socket.recv() and passes bytes into elice_shell_handle_input(instance,bytes,len);
+//passes received bytes to elite_shell_handle_input
 #include <string.h>
 #include <sys/param.h>
 #include "freertos/FreeRTOS.h"

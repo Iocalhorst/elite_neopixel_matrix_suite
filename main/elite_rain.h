@@ -1,3 +1,4 @@
+//simple header only elite_pixel_game_ente application implementation
 #include "elite_pixel_game_ente.h"
 #include "elite_particle.h"
 #include "elite.h"

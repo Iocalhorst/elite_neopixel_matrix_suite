@@ -371,12 +371,8 @@ void app_main(void){
     };
 
 
-
-
     xTaskCreate(elite_logger_task, "elite_logger_task", 4096, &elite_logger_task_params, 5, &p_elite_logger_task_handle);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-
     elog("\n------------hello again-------------\n");
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     elog("INFO : Hier koennte ihre werbung stehen\n");
@@ -384,12 +380,10 @@ void app_main(void){
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     main_start_eyes_tasks();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
-  //  main_start_pixelapp_task();
-    //vTaskDelay(1000 / portTICK_PERIOD_MS);
     xTaskCreate(tcp_server_task, "tcp_server", 4096, (void*)AF_INET, 5, NULL);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
     exit_condition=false;
-
     elog("INFO : [main] starting main monster loop\n");
     while (exit_condition!=true) {
           //always quit as default ... in case of stupid

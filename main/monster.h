@@ -1,3 +1,8 @@
+//basic idle/background led matrix animation
+//hardcoded 10*30 rgb patterns that get shoved right into the led strip driver library
+//placeholder visuals just to see something when the device is on but nothing else is main_theres_a_pixel_game_running
+//3 pacman monsters in different colors with eyes looking around the place.
+//cuteness factor A++
 #include "esp_random.h"
 #include "elite.h"
 #include "elite_pixel_game_ente.h"

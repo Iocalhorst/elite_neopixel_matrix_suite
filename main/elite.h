@@ -1,3 +1,6 @@
+//pretty hackish collection of copy paste type boilerplate stuff
+//nothing to see here - go away
+
 #pragma once
 #include "defines.h"
 #include <stdio.h>

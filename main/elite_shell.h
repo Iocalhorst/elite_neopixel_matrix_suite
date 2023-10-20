@@ -1,4 +1,9 @@
 //mr_shell header only library
+//tcp socket based cli
+//server at 9002, try netcat or sth via a terminal. "nc espmatrix.local 9002"
+//"rain" worky - starting the basic rain animation
+//"kill",alias "stop" alias "exit" worky - it ends the current running animation and calls chil and base destructors
+//"reboot" - software reset of the esp32 host device
 #include "string.h"
 #pragma once
 

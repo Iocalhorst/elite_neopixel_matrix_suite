@@ -1,4 +1,4 @@
-
+//abstraction layer between the framebuffer provider and the led driver library
 #pragma once
 #define LED_STRIP_BLINK_GPIO  26
 // Numbers of the LED in the strip
