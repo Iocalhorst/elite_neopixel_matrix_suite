@@ -176,6 +176,9 @@ void main_simple_ota_task(void *pvParameter)
     esp_https_ota_config_t ota_config = {
         .http_config = &config,
     };
+    char log_str[128]={0};
+    sprintf(log_str,"INFO : [main_simple_ota_task] Attempting to download update from %s",config.url);
+    elog(log_str);
     ESP_LOGI(TAG, "Attempting to download update from %s", config.url);
     esp_err_t ret = esp_https_ota(&ota_config);
     if (ret == ESP_OK) {
@@ -432,7 +435,7 @@ void app_main(void){
               mr_display_update_leds();
         };
     };
-  
+
    main_reboot();
 
 }

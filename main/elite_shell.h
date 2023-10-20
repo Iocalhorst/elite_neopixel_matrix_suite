@@ -78,8 +78,19 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flag){
             if (!strcmp(buf,"rain")) {response="rain";cmd=1;};
   };
   send(outfd,response,strlen(response),flag);
-  if (cmd==1){if(main_theres_a_pixel_game_running==false&&main_kill_pixel_game==false){main_start_pixel_game_task();};};
-  if (cmd==2){main_reboot();};
-  if (cmd==3){if(main_theres_a_pixel_game_running==true&&main_kill_pixel_game==false){main_kill_pixel_game=true;};};
+  if (cmd==1){
+    if(main_theres_a_pixel_game_running==false&&main_kill_pixel_game==false){
+      main_start_pixel_game_task();
+    };
+  };
+  if (cmd==2){
+    if(main_theres_a_pixel_game_running==true&&main_kill_pixel_game==false){
+    main_kill_pixel_game=true;main_reboot();
+    };
+  };
+  if (cmd==3){if(main_theres_a_pixel_game_running==true&&main_kill_pixel_game==false){
+    main_kill_pixel_game=true;
+    };
+  };
   return true;
 };

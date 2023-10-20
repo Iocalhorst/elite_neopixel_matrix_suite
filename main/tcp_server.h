@@ -29,8 +29,7 @@
 
 //static const char *TAG = "tcp_server";
 
-static void handle_socket(const int sock)
-{
+static void handle_socket(const int sock){
   elite_shell_t *mr_shell=elite_shell_construct();
   mr_shell->outfd=sock;
     int len;
