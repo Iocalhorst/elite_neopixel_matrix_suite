@@ -1,4 +1,4 @@
-#define TAG "EliteProject MOIN"
+#define TAG "EliteProject"
 
 #include <stdio.h>
 #include <string.h>
@@ -177,7 +177,7 @@ void main_simple_ota_task(void *pvParameter)
         .http_config = &config,
     };
     char log_str[128]={0};
-    sprintf(log_str,"INFO : [main_simple_ota_task] Attempting to download update from %s",config.url);
+    sprintf(log_str,"INFO : [main_simple_ota_task] Attempting to download update from %s\n",config.url);
     elog(log_str);
     ESP_LOGI(TAG, "Attempting to download update from %s", config.url);
     esp_err_t ret = esp_https_ota(&ota_config);

@@ -36,6 +36,7 @@ static void handle_socket(const int sock){
     char rx_buffer[128];
 
     do {
+      elite_shell_send_prompt(mr_shell,sock,0);
         len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
         if (len < 0) {
             //ESP_LOGE(TAG, "Error occurred during receiving: errno %d", errno);#
