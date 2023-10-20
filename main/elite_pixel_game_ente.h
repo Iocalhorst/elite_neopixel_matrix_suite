@@ -8,8 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-
-static const int log_delay=150;
+#include "elite.h"
 
 typedef struct {
   uint8_t r,g,b;

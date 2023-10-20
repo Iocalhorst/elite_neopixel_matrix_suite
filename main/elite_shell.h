@@ -64,6 +64,8 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
   if (!strcmp(buf,"rain\n\0"))cmd=1;
   if (cmd==0&&!strcmp(buf,"reboot\n\0"))cmd=2;
   if (cmd==0&&!strcmp(buf,"kill\n\0"))cmd=3;
+  if (cmd==0&&!strcmp(buf,"exit\n\0"))cmd=4;
+  if (cmd==0&&!strcmp(buf,"testfs\n\0"))cmd=5;
 
   char* wtf_str="wtf?\n";
   char* ok_str="ok\n";
@@ -84,6 +86,11 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
       };
       break;
     };
+    case 4 : {
+      return false;
+      break;
+    };
+    case 5 : {if (elite_init_littlefs()==true) elite_test_little_fs();break;};
     default : {
       send(outfd,wtf_str,strlen(wtf_str),flags);
       return true;

@@ -60,7 +60,7 @@ static void handle_socket(const int sock){
             //while (to_write > 0) {
 
                 if (elite_shell_handle_input(sock,rx_buffer, len,0)==false){
-                    elog("ERROR : [tcp_server] Error occurred during sending.\n");
+                    elog("INFO: [tcp_server] Closing socket due to receive error or exit command\n");
                     // Failed to retransmit, giving up
                     return;
                 }

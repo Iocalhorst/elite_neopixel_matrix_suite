@@ -323,6 +323,8 @@ void main_start_eyes_tasks(){
 
 
 void main_reboot(){
+
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
   ESP_LOGI(TAG, "rebooting in 10\n");
   elog("INFO : [main] rebooting in 10\n");
   vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -418,7 +420,7 @@ void app_main(void){
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     main_start_eyes_tasks();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
-    xTaskCreate(tcp_server_task, "tcp_server", 4096, (void*)AF_INET, 5, NULL);
+    xTaskCreate(tcp_server_task, "tcp_server", 4096*2, (void*)AF_INET, 5, NULL);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
     bool main_exit_condition=false;

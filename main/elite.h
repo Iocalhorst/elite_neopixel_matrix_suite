@@ -6,6 +6,33 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include "esp_err.h"
+#include "esp_log.h"
+#include "esp_system.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "sdkconfig.h"
+#include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include "esp_idf_version.h"
+#include "esp_flash.h"
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#include "esp_chip_info.h"
+#include "spi_flash_mmap.h"
+#endif
+
+
+#include "esp_littlefs.h"
+static const int log_delay=150;
+esp_vfs_littlefs_conf_t conf = {
+    .base_path = "/littlefs",
+    .partition_label = "littlefs",
+    .format_if_mount_failed = true,
+    .dont_mount = false,
+};
 
 bool eliteAssert(bool ok,const char* msg);
 TaskHandle_t p_elite_logger_task_handle;
@@ -198,3 +225,125 @@ bool eliteAssert(bool ok,const char* msg){
   if (!ok) {elog(msg);};
   return !ok;
 };
+
+
+
+bool elite_init_littlefs(){
+  esp_err_t ret = esp_vfs_littlefs_register(&conf);
+  if (ret==ESP_OK) return true;
+  if (ret != ESP_OK) {
+          if (ret == ESP_FAIL)
+          {
+                  elog("ERROR : [elite_init_littlefs] Failed to mount or format filesystem\n");
+          }
+          else if (ret == ESP_ERR_NOT_FOUND)
+          {
+                  elog("ERROR : [elite_init_littlefs] Failed to find LittleFS partition\n");
+          }
+          else
+          {
+                  elog("ERROR : [elite_init_littlefs] Failed to initialize LittleFS\n");
+          }
+          return false;
+  }
+  return true;
+};
+void elite_test_little_fs(){
+  size_t total = 0, used = 0;int ret;
+  ret = esp_littlefs_info(conf.partition_label, &total, &used);
+  if (ret != ESP_OK)
+  {
+    //  ESP_LOGE(TAG, "Failed to get LittleFS partition information (%s)", esp_err_to_name(ret));
+      elog("ERROR : [elite_test_little_fs] Failed to get LittleFS partition information\n");
+      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  }
+          else
+          {
+            char log_str[512]={0};
+            sprintf(log_str,"INFO : [elite_test_little_fs] Partition size: total: %d, used: %d\n", total, used);
+            elog(log_str);
+            vTaskDelay(log_delay / portTICK_PERIOD_MS);
+          }
+
+          // Use POSIX and C standard library functions to work with files.
+          // First create a file.
+          elog("INFO : [elite_test_little_fs] Opening file\n");
+          FILE *f = fopen("/littlefs/hello.txt", "w");
+          if (f == NULL)
+          {
+                  elog("ERROR :[elite_test_little_fs] Failed to open file for writing\n");
+                  return;
+          }
+          fprintf(f, "Hier koennte ihre Werbung stehen!\n");
+          fclose(f);
+          elog("INFO : [elite_test_little_fs] File written\n");
+          vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+          // Check if destination file exists before renaming
+          struct stat st;
+          if (stat("/littlefs/foo.txt", &st) == 0)
+          {
+                  // Delete it if it exists
+                  unlink("/littlefs/foo.txt");
+          }
+
+          // Rename original file
+          elog("INFO : [elite_test_little_fs] Renaming file\n");
+          vTaskDelay(log_delay / portTICK_PERIOD_MS);
+          if (rename("/littlefs/hello.txt", "/littlefs/foo.txt") != 0)
+          {
+                  elog("ERROR : [elite_test_little_fs] Rename failed\n");
+                  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+                  return;
+          }
+
+          // Open renamed file for reading
+          elog("INFO : [elite_test_little_fs] Reading file\n");
+          vTaskDelay(log_delay / portTICK_PERIOD_MS);
+          f = fopen("/littlefs/foo.txt", "r");
+          if (f == NULL)
+          {
+                  elog("ERROR : [elite_test_little_fs] Failed to open file for reading\n");
+                  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+                  return;
+          }
+
+          char line[128];
+          char *pos;
+
+          fgets(line, sizeof(line), f);
+          fclose(f);
+          // strip newline
+          pos = strchr(line, '\n');
+          if (pos)
+          {
+                  *pos = '\0';
+          }
+
+          char log_str2[512];
+          sprintf(log_str2,"INFO : [elite_test_little_fs] Read from file : %s\n", line);
+          elog(log_str2);
+          vTaskDelay(log_delay / portTICK_PERIOD_MS);
+          esp_vfs_littlefs_unregister(conf.partition_label);
+          elog("INFO : [elite_test_little_fs] LittleFS unmounted");
+            vTaskDelay(log_delay / portTICK_PERIOD_MS);
+          /*elog("INFO : [elite_test_little_fs] Reading from flashed filesystem example.txt");
+          f = fopen("/littlefs/example.txt", "r");
+          if (f == NULL)
+          {
+                  ESP_LOGE(TAG, "Failed to open file for reading");
+                  return;
+          }
+          fgets(line, sizeof(line), f);
+          fclose(f);
+          // strip newline
+          pos = strchr(line, '\n');
+          if (pos)
+          {
+                  *pos = '\0';
+          }
+          ESP_LOGI(TAG, "Read from file: '%s'", line);
+          */
+          // All done, unmount partition and disable LittleFS
+
+}
