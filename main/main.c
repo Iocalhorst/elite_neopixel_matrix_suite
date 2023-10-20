@@ -320,6 +320,43 @@ void main_start_eyes_tasks(){
 
 
 void main_reboot(){
+  ESP_LOGI(TAG, "rebooting in 10\n");
+  elog("INFO : [main] rebooting in 10\n");
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  elog("INFO : [main] rebooting in 9\n");
+  ESP_LOGI(TAG, "9");
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  elog("INFO : [main] rebooting in 8\n");
+  ESP_LOGI(TAG, "8");
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  elog("INFO : [main] rebooting in 7\n");
+  ESP_LOGI(TAG, "7");
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  elog("INFO : [main] rebooting in 6\n");
+  ESP_LOGI(TAG, "6");
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  elog("INFO : [main] rebooting in 5\n");
+  ESP_LOGI(TAG, "5");
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  elog("INFO : [main] rebooting in 4\n");
+  ESP_LOGI(TAG, "4");
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  elog("INFO : [main] rebooting in 3\n");
+  ESP_LOGI(TAG, "3");
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  elog("INFO : [main] rebooting in 2\n");
+  ESP_LOGI(TAG, "2");
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  elog("INFO : [main] rebooting in 1\n");
+  ESP_LOGI(TAG, "1");
+  vTaskDelay(500 / portTICK_PERIOD_MS);
+  elog("INFO : [main] Don't forget to like, share and subscribe!\n");
+  vTaskDelay(500 / portTICK_PERIOD_MS);
+  ESP_LOGI(TAG, "rebooting in 0");
+  vTaskDelay(500 / portTICK_PERIOD_MS);
+  //just for good measure
+  free(global_log_buffer);
+
         esp_restart();
 };
 
@@ -366,8 +403,6 @@ void app_main(void){
 
     elite_logger_task_params_t elite_logger_task_params={
       .log_socket=sock,
-      .intervall=5000 / portTICK_PERIOD_MS,
-      .message="moin"
     };
 
 
@@ -383,100 +418,21 @@ void app_main(void){
     xTaskCreate(tcp_server_task, "tcp_server", 4096, (void*)AF_INET, 5, NULL);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
-    exit_condition=false;
+    bool main_exit_condition=false;
     elog("INFO : [main] starting main monster loop\n");
-    while (exit_condition!=true) {
-          //always quit as default ... in case of stupid
-          //exit_condition=true;
 
 
-          if (n_main_loops_limit>0) {
-              n_main_loops_limit-=1;
-              exit_condition=false;
-              ESP_LOGI(TAG, "loop : n_main_loops left %d",n_main_loops_limit);
-          };
+    while (main_exit_condition!=true) {              //xTaskNotify(p_elite_logger_task_handle,TEST_LOG_CMD,3);//3==eSetValueWithOverwrite
 
-
-          if (n_main_loops_limit==0) {
-              ESP_LOGI(TAG, "leaving main loop : n_main_loops==0 %d",n_main_loops_limit);
-              exit_condition=true;
-          };
-
-
-          if (n_main_loops_limit<0) {
-              ESP_LOGE(TAG, "oops : n_main_loops<0 %d",n_main_loops_limit);
-              exit_condition=true;
-          };
-
-          vTaskDelay(50 / portTICK_PERIOD_MS);
-
-
-              //xTaskNotify(p_elite_logger_task_handle,TEST_LOG_CMD,3);//3==eSetValueWithOverwrite
-
-if (!main_theres_a_pixel_game_running) {
+        if (!main_theres_a_pixel_game_running) {
               main_clear_display();
               main_draw_background();
               main_draw_monsters();
               vTaskDelay(10 / portTICK_PERIOD_MS);
               mr_display_update_leds();
-            };
-    //          vTaskDelay(50 / portTICK_PERIOD_MS);
+        };
+    };
+  
+   main_reboot();
 
-
-
-      };
-      vTaskDelay(5000 / portTICK_PERIOD_MS);
-      ESP_LOGI(TAG, "exit_condition==true;");
-
-
-
-
-      ESP_LOGI(TAG, "rebooting in 10\n");
-      elog("INFO : [main] rebooting in 10\n");
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-      elog("INFO : [main] rebooting in 9\n");
-      ESP_LOGI(TAG, "9");
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-      elog("INFO : [main] rebooting in 8\n");
-      ESP_LOGI(TAG, "8");
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-      elog("INFO : [main] rebooting in 7\n");
-      ESP_LOGI(TAG, "7");
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-      elog("INFO : [main] rebooting in 6\n");
-      ESP_LOGI(TAG, "6");
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-      elog("INFO : [main] rebooting in 5\n");
-      ESP_LOGI(TAG, "5");
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-      elog("INFO : [main] rebooting in 4\n");
-      ESP_LOGI(TAG, "4");
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-      elog("INFO : [main] rebooting in 3\n");
-      ESP_LOGI(TAG, "3");
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-      elog("INFO : [main] rebooting in 2\n");
-      ESP_LOGI(TAG, "2");
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-      elog("INFO : [main] rebooting in 1\n");
-      ESP_LOGI(TAG, "1");
-      vTaskDelay(500 / portTICK_PERIOD_MS);
-      if (sock != -1) {
-          elog("INFO : [main] Don't forget to like, share and subscribe!\n");
-            vTaskDelay(500 / portTICK_PERIOD_MS);
-
-          elog("INFO : [main] Shutting down log_socket\n");
-              vTaskDelay(500 / portTICK_PERIOD_MS);
-          ESP_LOGE(TAG, "Shutting down log_socket\n");
-          shutdown(sock, 0);
-          close(sock);
-
-      }
-      ESP_LOGI(TAG, "rebooting in 0");
-
-      vTaskDelay(500 / portTICK_PERIOD_MS);
-
-      //just for good measure
-      free(global_log_buffer);
-      esp_restart();
 }

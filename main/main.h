@@ -1,3 +1,4 @@
+#include "elite.h"
 #pragma once
 void main_start_pixel_game_task();
 void main_reboot();

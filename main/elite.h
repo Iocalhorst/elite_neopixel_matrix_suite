@@ -8,9 +8,16 @@
 #include <string.h>
 
 bool eliteAssert(bool ok,const char* msg);
+TaskHandle_t p_elite_logger_task_handle;
 
 static EventGroupHandle_t s_wifi_event_group;
 static int s_retry_num = 0;
+static size_t global_log_buffer_size=1024;
+static char* global_log_buffer=NULL;
+
+static void elog(const char* s);
+
+
 static void elite_wifi_event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data){
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
@@ -92,15 +99,6 @@ static void elite_init_wifi(){
 
 };
 
-static size_t global_log_buffer_size=1024;
-static char* global_log_buffer=NULL;
-static int n_main_loops_limit=100000;
-//static int counter=0;
-
-
-static bool exit_condition=false;
-
-
 
 static void elite_init_nvs(){
   esp_err_t ret = nvs_flash_init();
@@ -121,16 +119,13 @@ typedef struct {
   char* message;
 } elite_logger_task_params_t;
 
-#define TEST_LOG_CMD 1
 
 static void elite_logger_task(void* args){
-
+  (void)args;
   elite_logger_task_params_t p_my_params;
-  p_my_params.message="moin";
-
+  (void)p_my_params;
   ESP_LOGI(TAG, "Initializing Logger Socket");
-  int s;
-  int ret;
+  int sock;
   struct sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
   addr.sin_len = sizeof(addr);
@@ -138,98 +133,53 @@ static void elite_logger_task(void* args){
   addr.sin_port = PP_HTONS(SOCK_TARGET_PORT);
   addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
 
-  s = lwip_socket(AF_INET, SOCK_DGRAM, 0);
+  sock = lwip_socket(AF_INET, SOCK_DGRAM, 0);
 
-  if (s>=0) {
-    ESP_LOGI(TAG, "Socket %d, udp , target_addr %s, port %d",s,SOCK_TARGET_HOST,SOCK_TARGET_PORT);
+  if (sock>=0) {
+    ESP_LOGI(TAG, "Socket %d, udp , target_addr %s, port %d",sock,SOCK_TARGET_HOST,SOCK_TARGET_PORT);
   }else ESP_LOGE(TAG, "Socket initalizing failed");
+  lwip_connect(sock, (struct sockaddr*)&addr, sizeof(addr));
 
-//  ESP_LOGI(TAG, "Testing connect()");
+  global_log_buffer=(char*)malloc(global_log_buffer_size*sizeof(char));
+  uint32_t ulNotificationValue;
+  size_t max_tx_buf=768;
+  char* tx_buf=(char*)malloc(max_tx_buf);
+  memset(tx_buf,0,max_tx_buf);
+  bool elite_logger_exit_condition=false;
 
-  ret = lwip_connect(s, (struct sockaddr*)&addr, sizeof(addr));
-  if (ret!=0) {ESP_LOGE(TAG, "Connect didnt work: errno %d ret %d", errno,ret);}
-  else ESP_LOGD(TAG, "Connect worked: errno %d ret %d", errno,ret);
-  LWIP_ASSERT("connect ret == 0", ret==0);
-
-  ESP_LOGI(TAG, "Testing write()");
-  const char* m="hello again!\n";
-  ret = lwip_write(s, m, sizeof(m));
-  //if (ret<14) {ESP_LOGE(TAG, "write didnt work: errno %d ret %d", errno,ret);}
-  //else ESP_LOGD(TAG, "write() worked: errno %d ret %d", errno,ret);
-  //LWIP_ASSERT("write ret == 13", ret >= 14);
-//  FILE *fp = fdopen(s, "w+");
-//  fprintf(fp,"lalala socket: %d",s);
-
-  //ESP_LOGI(TAG, "Testing close()");
-
-/*  ret = lwip_close(s);
-  if (ret!=0) {ESP_LOGE(TAG, "close() didnt work: errno %d ret %d", errno,ret);}
-  else ESP_LOGI(TAG, "close() worked: errno %d ret %d", errno,ret);
-  LWIP_ASSERT("close ret == 0", ret == 0);
-*/
-
-
-global_log_buffer=(char*)malloc(global_log_buffer_size*sizeof(char));
-
-   uint32_t ulNotificationValue;
-   int num=0;
-  while (true) {
-    //ESP_LOGI("elitelogger", "messageStr=%s",p_my_params.message);
+  while (!elite_logger_exit_condition) {
       if (xTaskNotifyWait(0, 0, &ulNotificationValue, portMAX_DELAY)) {
-        switch (ulNotificationValue) {
-
-          case TEST_LOG_CMD : {
-              //ESP_LOGI(TAG, "tx_buf : <%s>",tx_buf);
-              size_t max_tx_buf=64;
-              char* tx_buf=(char*)malloc(max_tx_buf);
-              memset(tx_buf,0,max_tx_buf);
-              sprintf(tx_buf,"log4joy : %s %d\n",p_my_params.message,num);
-              num++;
-
-
-
-              size_t tx_len=strlen(tx_buf);
-              ret=lwip_write(s,tx_buf,tx_len);
-
-              if (ret!=tx_len) {ESP_LOGE(TAG, "failed to send something via the udp log socket : %s", tx_buf);}
-              else {ESP_LOGI(TAG, "send something via the udp log socket : %s",tx_buf);};
-
-              free(tx_buf);
-
-              ulNotificationValue=0;
+        switch(ulNotificationValue){
+            case 0 : {
+              elite_logger_exit_condition=true;
               break;
-              };
-        default :{
+            };
+            default :{
+              sprintf(tx_buf,"log4joy : %s",global_log_buffer);
+              size_t tx_len=strlen(tx_buf);
+              send(sock,tx_buf,tx_len,0);
+              memset(tx_buf,0,max_tx_buf);
+              ulNotificationValue=0;
+            };
+        };
+
+      };
+  };
+  free(tx_buf);
+  if (sock != -1) {
 
 
-            size_t max_tx_buf=768;
-            char* tx_buf=(char*)malloc(max_tx_buf);
-            memset(tx_buf,0,max_tx_buf);
+      elog("INFO : [main] Shutting down log_socket\n");
+          vTaskDelay(500 / portTICK_PERIOD_MS);
+      ESP_LOGE(TAG, "Shutting down log_socket\n");
+      shutdown(sock, 0);
+      close(sock);
 
-            sprintf(tx_buf,"log4joy : %s",global_log_buffer);
-
-            //this is silly because we pass the message length in ulNotificationValue. why use strlen again?!
-            size_t tx_len=strlen(tx_buf);
-
-            ret=lwip_write(s,tx_buf,tx_len);
-            LWIP_ASSERT("ret==lwip_write(s,tx_buf,tx_len);", ret==tx_len);
-
-            free(tx_buf);
-            //ret=lwip_write(s,globalLogBuffer,ulNotificationValue);
-            ulNotificationValue=0;
-            //vTaskDelay(100 / portTICK_PERIOD_MS);
-          };
-      };//switch
-    };
-  //  vTaskDelay(100 / portTICK_PERIOD_MS);
+  }
+  vTaskDelete(NULL);
 };
 
 
-  (void)p_my_params;
-  (void)args;
-};
-
-TaskHandle_t p_elite_logger_task_handle;
 
 
 void elog(const char* s){
