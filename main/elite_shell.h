@@ -66,6 +66,9 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
   if (cmd==0&&!strcmp(buf,"kill\n\0"))cmd=3;
   if (cmd==0&&!strcmp(buf,"exit\n\0"))cmd=4;
   if (cmd==0&&!strcmp(buf,"testfs\n\0"))cmd=5;
+  if (cmd==0&&!strcmp(buf,"help\n\0"))cmd=6;
+  if (cmd==0&&!strcmp(buf,"server\n\0"))cmd=7;
+
 
   char* wtf_str="wtf?\n";
   char* ok_str="ok\n";
@@ -90,7 +93,14 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
       return false;
       break;
     };
-    case 5 : {if (elite_init_littlefs()==true) elite_test_little_fs();break;};
+    case 5 : { elite_test_little_fs();break;};
+    case 6 : {
+      const char *help_str="try rain kill reboot server exit testfs";
+      send(outfd,help_str,strlen(help_str),flags);
+      return true;
+      break;
+    };
+    case 7 : {elite_start_file_server("/littlefs");break;};
     default : {
       send(outfd,wtf_str,strlen(wtf_str),flags);
       return true;

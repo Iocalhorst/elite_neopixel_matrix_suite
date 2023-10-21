@@ -361,6 +361,9 @@ void main_reboot(){
   vTaskDelay(500 / portTICK_PERIOD_MS);
   //just for good measure
   free(global_log_buffer);
+  esp_vfs_littlefs_unregister(conf.partition_label);
+  elog("INFO : [elite_test_little_fs] LittleFS unmounted");
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
         esp_restart();
 };
@@ -422,7 +425,15 @@ void app_main(void){
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     xTaskCreate(tcp_server_task, "tcp_server", 4096*2, (void*)AF_INET, 5, NULL);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+
+    if (!elite_init_littlefs()){
+    elog("ERROR : [main] Could not initialize LittleFS\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  }else {elog("INFO : [main] initialized LittleFS\n");
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);}
+    //const char* base_path = "/data";
+
     bool main_exit_condition=false;
     elog("INFO : [main] starting main monster loop\n");
 

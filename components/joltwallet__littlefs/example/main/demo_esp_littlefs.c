@@ -165,5 +165,5 @@ void app_main(void)
 
         // All done, unmount partition and disable LittleFS
         esp_vfs_littlefs_unregister(conf.partition_label);
-        ESP_LOGI(TAG, "LittleFS unmounted");
+        ESP_LOGI(TAG, "LittleFS unmounted\n");
 }
