@@ -5,6 +5,7 @@
 //"kill",alias "stop" alias "exit" worky - it ends the current running animation and calls chil and base destructors
 //"reboot" - software reset of the esp32 host device
 #include "string.h"
+#include "spritegetter.h"
 #pragma once
 
 
