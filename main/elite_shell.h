@@ -69,6 +69,7 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
   if (cmd==0&&!strcmp(buf,"testfs\n\0"))cmd=5;
   if (cmd==0&&!strcmp(buf,"help\n\0"))cmd=6;
   if (cmd==0&&!strcmp(buf,"server\n\0"))cmd=7;
+  if (cmd==0&&!strcmp(buf,"getsprites\n\0"))cmd=8;
 
 
   char* wtf_str="wtf?\n";
@@ -102,6 +103,7 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
       break;
     };
     case 7 : {elite_start_file_server("/littlefs");break;};
+    case 8 : {get_sprites();elog("INFO : [elite_shell_handle_input] get_sprites() returned");break;};
     default : {
       send(outfd,wtf_str,strlen(wtf_str),flags);
       return true;

@@ -460,7 +460,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath)
             continue;
         }
         sprintf(entrysize, "%ld", entry_stat.st_size);
-        sprintf(log_str,"ERROR :[http_resp_dir_html] Found %s : %s (%s bytes)", entrytype, entry->d_name, entrysize);
+        sprintf(log_str,"INFO :[http_resp_dir_html] Found %s : %s (%s bytes)\n", entrytype, entry->d_name, entrysize);
         elog(log_str);
         vTaskDelay(log_delay / portTICK_PERIOD_MS);
         /* Send chunk of HTML file containing table entries with file name and size */

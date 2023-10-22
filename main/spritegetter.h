@@ -302,30 +302,45 @@ const char* filenames300[276]={
 "fish3.raw",
 "nes71.raw"};
 
+#define SPRITE_HOST "192.168.0.249"
+#define SPRITE_PORT 8000
 void get_sprites(){
   char log_str[256]={0};
-  int sock;
+  int sprite_sock;
   struct sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
   addr.sin_len = sizeof(addr);
   addr.sin_family = AF_INET;
-  addr.sin_port = PP_HTONS(8000);
-  addr.sin_addr.s_addr = inet_addr("192.168.0.249");
+  addr.sin_port = PP_HTONS(SPRITE_PORT);
+  addr.sin_addr.s_addr = inet_addr(SPRITE_HOST);
 
-  sock = lwip_socket(AF_INET, SOCK_STREAM, 0);
+  sprite_sock = lwip_socket(AF_INET, SOCK_STREAM, 0);
+  lwip_connect(sprite_sock, (struct sockaddr*)&addr, sizeof(addr));
+  if (sprite_sock>=0) {
+    sprintf(log_str,"INFO : [get_sprites] Socket %d, target_addr %s, port %d\n",sprite_sock,SPRITE_HOST,SPRITE_PORT);
+    //ESP_LOGI(TAG, "Socket %d, udp , target_addr %s, port %d",sock,SOCK_TARGET_HOST,SOCK_TARGET_PORT);
+    elog(log_str);
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
-  if (sock>=0) {
-    ESP_LOGI(TAG, "Socket %d, udp , target_addr %s, port %d",sock,SOCK_TARGET_HOST,SOCK_TARGET_PORT);
-  }else ESP_LOGE(TAG, "Socket initalizing failed");
-  lwip_connect(sock, (struct sockaddr*)&addr, sizeof(addr));
+  }else{
+  elog("ERROR : Socket initalizing failed");
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  };
+
+  lwip_connect(sprite_sock, (struct sockaddr*)&addr, sizeof(addr));
 
   char tx_buf[128]={0};
   const char *file_name=filenames300[0];
-  sprintf(tx_buf,"GET /%s\n",file_name);
+  sprintf(tx_buf,"GET /%s\n\n",file_name);
   size_t tx_len=strlen(tx_buf);
-  send(sock,tx_buf,tx_len,0);
+  send(sprite_sock,tx_buf,tx_len,0);
   char rx_buf[300]={0};
-  int bytes_received = recv(sock, rx_buf, sizeof(rx_buf), 0);
+  int bytes_received = recv(sprite_sock, rx_buf, sizeof(rx_buf), 0);
+  sprintf(log_str,"INFO : [get_sprites] received %i bytes\n",bytes_received);
+  //ESP_LOGI(TAG, "Socket %d, udp , target_addr %s, port %d",sock,SOCK_TARGET_HOST,SOCK_TARGET_PORT);
+  elog(log_str);
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
   char file_path[128]={0};
   const char *base_path="/littlefs";
   sprintf(file_path,"%s/%s",base_path,file_name);
@@ -353,12 +368,11 @@ void get_sprites(){
 
   memset(tx_buf,0,128);
 
-  if (sock != -1) {
-      elog("[INFO : [get_sprites] Shutting down log_socket\n");
+  if (sprite_sock != -1) {
+      elog("[INFO : [get_sprites] Shutting down socket\n");
           vTaskDelay(log_delay/ portTICK_PERIOD_MS);
-      shutdown(sock, 0);
-      close(sock);
+      shutdown(sprite_sock, 0);
+      close(sprite_sock);
 
   }
-  vTaskDelete(NULL);
 };
