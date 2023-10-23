@@ -170,7 +170,7 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
   }
 
-  elog("INFO : [elite_pixel_game_construct] allocating p_layer[0]");
+  elog("INFO : [elite_pixel_game_construct] allocating p_layer[0]\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
   self->p_layer[0]=(layer_fRGB*)malloc(sizeof(layer_fRGB));
   if (self->p_layer[0]!=NULL) {
@@ -611,6 +611,7 @@ void elite_pixel_game_task(void* params){
 
   vTaskDelay(500 / portTICK_PERIOD_MS);
   elog("INFO : [elite_pixel_game_task] started\n");
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
   //int32_t pixelapp_runtime_limit_ms=60000;
   int32_t pixelapp_runtime_ms=0;
 

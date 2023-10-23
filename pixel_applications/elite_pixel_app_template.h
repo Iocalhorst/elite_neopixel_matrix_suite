@@ -50,24 +50,24 @@ template_pixel_app_t* template_pixel_app_construct(){
   return self;
 };
 
-bool template_on_user_update(void* params,elite_pixel_game_t *ente,float fElapsedTime){
+bool template_pixel_app_on_user_update(void* params,elite_pixel_game_t *ente,float fElapsedTime){
 //debug tracing in
-    if (template_on_user_update_entered_log==false) {
-        template_on_user_update_entered_log=true;
+    if (template_pixel_app_on_user_update_entered_log==false) {
+        template_pixel_app_on_user_update_entered_log=true;
         elog("INFO : [template_pixel_app_update] entered template_pixel_app_update() - this notification will only occur once\n");
         vTaskDelay(log_delay / portTICK_PERIOD_MS);
         };
 //body
-  template_app_t *self=(template_app_t*)params;
-
+  template_pixel_app_t *self=(template_pixel_app_t*)params;
+  (void)self;
   elite_pixel_game_set_target_layer(ente,0);
-  sfRGB c={0.0f,0.0f,0.0f};
+  sfRGB c={0.0f,64.0f,0.0f};
   elite_pixel_game_fill_flayer(ente,c);
 
 
 //debug tracing out
-  if (template_on_user_update_leaving_log==false) {
-      template_on_user_update_leaving_log=true;
+  if (template_pixel_app_on_user_update_leaving_log==false) {
+      template_pixel_app_on_user_update_leaving_log=true;
       elog("INFO : [template_pixel_app_on_user_update] leaving template_pixel_app_on_user_update() - this notification will only occur once\n");
       vTaskDelay(log_delay / portTICK_PERIOD_MS);
     };
@@ -81,7 +81,7 @@ bool template_pixel_app_on_user_destroy(void* params){
 
     elog("INFO : [template_pixel_app_on_user_update] entering template_pixel_app_on_user_destroy()\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
-    template_t *self=(template_t*)params;
+    template_pixel_app_t *self=(template_pixel_app_t*)params;
     elog("INFO : [template_pixel_app_on_user_update] deallocating self(template_pixel_app)\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
 

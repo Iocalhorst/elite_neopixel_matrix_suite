@@ -7,6 +7,7 @@
 #include "string.h"
 #include "spritegetter.h"
 #include "elite_rain.h"
+#include "elite_pixel_app_template.h"
 #pragma once
 
 
@@ -71,6 +72,7 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
   if (cmd==0&&!strcmp(buf,"help\n\0"))cmd=6;
   if (cmd==0&&!strcmp(buf,"server\n\0"))cmd=7;
   //if (cmd==0&&!strcmp(buf,"getsprites\n\0"))cmd=8;
+  if (cmd==0&&!strcmp(buf,"template\n\0"))cmd=9;
 
 
   char* wtf_str="wtf?\n";
@@ -112,6 +114,12 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
         };
         break;
     };
+    case 9 : {
+        if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false)
+        template_pixel_app_start_task();
+        break;
+    };
+
     default : {
       send(outfd,wtf_str,strlen(wtf_str),flags);
       return true;
