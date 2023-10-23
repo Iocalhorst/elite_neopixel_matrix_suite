@@ -206,12 +206,13 @@ vTaskDelete(NULL);
 
 
 void main_timer_log_task(void *pvParameter){
-  int64_t now=esp_timer_get_time();
+
   uint64_t lastTimeStampInMicroSeconds=now;
   float fElapsedTime=0.0f;
   float accumulated_fElapsedTime=0.0f;
 
   while (true) {
+    int64_t now=esp_timer_get_time();
     fElapsedTime=(float)(now-lastTimeStampInMicroSeconds);
     fElapsedTime*=0.000001f;
     accumulated_fElapsedTime+=fElapsedTime;
