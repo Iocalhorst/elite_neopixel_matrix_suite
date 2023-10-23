@@ -4,11 +4,15 @@
 //todo : come up with a rendering scheme/funtion interface that serves the purpose. wat?
 
 #pragma once
+bool elite_theres_a_pixel_game_running=false;
+bool elite_kill_pixel_game=false;
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include "elite.h"
+
+
 
 typedef struct {
   uint8_t r,g,b;
@@ -19,6 +23,7 @@ typedef struct {
   float fr,fg,fb;
 }sfRGB;
 
+void elite_display_update(sRGB *p_frame_buf);
 
 const sRGB pink={
   .r=68,
@@ -99,6 +104,9 @@ struct s_elite_pixel_game {
     bool (*on_user_update)(void*,elite_pixel_game_t*,float);
     void* (*on_user_construct)();
     bool (*on_user_destroy)(void*);
+    uint64_t lastTimeStampInMicroSeconds;
+    float fElapsedTime;
+    float accumulated_fElapsedTime;
     //in case you wanted to customize the renderer i.e if user wants to render multiple layers and/or arbitrarly ordered overwrite this function pointer
     //default config is just to render layer 0 to the p_frame_buf without any fancy pants like alpha blending and stuff.
     //p_frame_buf is where your sRGB (uint8_t,uint8_t,uint8_t) rgb data bytes will sit at
@@ -249,6 +257,10 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
       self->init_ok=false;
       return NULL;
     };
+
+    self->lastTimeStampInMicroSeconds=esp_timer_get_time();
+    self->accumulated_fElapsedTime=0.0f;
+    self->fElapsedTime=0.0f;
     return self;
 };
 
@@ -566,5 +578,83 @@ bool elite_pixel_game_render_to_framebuf(elite_pixel_game_t *self){
     };
     return true;
 }
+
+
+void elite_pixel_game_update_fElapsedTime(elite_pixel_game_t *self){
+  int64_t now=esp_timer_get_time();
+  self->fElapsedTime=(float)(now-self->lastTimeStampInMicroSeconds);
+  self->fElapsedTime*=0.000001f;
+  self->accumulated_fElapsedTime+=self->fElapsedTime;
+  self->lastTimeStampInMicroSeconds=now;
+};
+
+
+void elite_pixel_game_task(void* params){
+  elite_theres_a_pixel_game_running=true;
+  elite_kill_pixel_game=false;
+  elite_pixel_game_config_t *p_pixel_game_config=(elite_pixel_game_config_t*)params;
+
+  elite_pixel_game_config_t pixel_game_config={
+    .app_name=p_pixel_game_config->app_name,
+    .screen_width=p_pixel_game_config->screen_width,
+    .screen_height=p_pixel_game_config->screen_height,
+    .on_user_construct=p_pixel_game_config->on_user_construct,
+    .on_user_update=p_pixel_game_config->on_user_update,
+    .on_user_destroy=p_pixel_game_config->on_user_destroy
+  };
+
+  //p_pixel_game_config_t pixel_game_config=(pixel_game_config_t)params;
+  //to not fuck up the update window at startup
+  //while(ota_has_stopped==false){
+//    vTaskDelay(500 / portTICK_PERIOD_MS);
+//  };
+
+  vTaskDelay(500 / portTICK_PERIOD_MS);
+  elog("INFO : [elite_pixel_game_task] started\n");
+  //int32_t pixelapp_runtime_limit_ms=60000;
+  int32_t pixelapp_runtime_ms=0;
+
+
+  elog("INFO : [elite_pixel_game_task] calling elite_pixel_game_construct(pixel_app_config\n");
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+  elite_pixel_game_t *p_pixel_game=elite_pixel_game_construct(pixel_game_config);
+
+  elog("INFO : [elite_pixel_game_task] finished constructing pixelapp\n");
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+
+
+
+  while (true){
+
+    elite_pixel_game_update_fElapsedTime(p_pixel_game);
+
+    elite_pixel_game_update(p_pixel_game,p_pixel_game->fElapsedTime);
+    elite_display_update(p_pixel_game->p_frame_buf);
+    vTaskDelay(20/ portTICK_PERIOD_MS);
+    pixelapp_runtime_ms+=20;
+    if (elite_kill_pixel_game==true) break;
+  };
+
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  elog("INFO : [elite_pixel_game_task] calling elite_pixel_game_destruct()\n");
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+  if (elite_pixel_game_destruct(p_pixel_game)==false) {
+      elog("ERROR : [elite_pixel_game_task] elite_pixel_game_destruct(p_pixel_app) returned false\n");
+    }else{
+      elog("INFO : [elite_pixel_game_task] elite_pixel_game_destruct(p_pixel_app) returned true\n");
+  };
+  vTaskDelay( log_delay/ portTICK_PERIOD_MS);
+  elog("INFO : [elite_pixel_game_task] killing elite_pixel_game_task\n");
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  elite_theres_a_pixel_game_running=false;
+  elite_kill_pixel_game=false;
+  //exit_condition=true;
+  vTaskDelete(NULL);
+
+};
+
 
 //bool elite_pixel_game_render_to_framebuf();

@@ -5,8 +5,8 @@
 //batch particle[] physics via particle_shower_update(fElapsedTime);
 //render_draw() via pixel_game_ente as parameter.
 //see elite_pixel_game_ente.h for api details
-#include "elite_pixel_game_ente.h"
 #include "elite.h"
+#include "elite_pixel_game_ente.h"
 #pragma once
 
 typedef struct{

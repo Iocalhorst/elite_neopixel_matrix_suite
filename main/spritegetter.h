@@ -33,7 +33,8 @@ const char* filenames900[9]={"cats.raw",
 "sprites6.raw",
 "sprites7.raw",
 "sprites8.raw"};
-const char* filenames300[276]={
+#define NUM_FILES 267
+const char* filenames300[267]={
 "nes11.raw",
 "col_3_6.raw",
 "col_3_14b.raw",
@@ -304,7 +305,7 @@ const char* filenames300[276]={
 
 #define SPRITE_HOST "192.168.0.249"
 #define SPRITE_PORT 8000
-void get_sprites(){
+void get_sprite(int i){
   char log_str[256]={0};
   int sprite_sock;
   struct sockaddr_in addr;
@@ -315,6 +316,7 @@ void get_sprites(){
   addr.sin_addr.s_addr = inet_addr(SPRITE_HOST);
 
   sprite_sock = lwip_socket(AF_INET, SOCK_STREAM, 0);
+
   lwip_connect(sprite_sock, (struct sockaddr*)&addr, sizeof(addr));
   if (sprite_sock>=0) {
     sprintf(log_str,"INFO : [get_sprites] Socket %d, target_addr %s, port %d\n",sprite_sock,SPRITE_HOST,SPRITE_PORT);
@@ -330,7 +332,7 @@ void get_sprites(){
   lwip_connect(sprite_sock, (struct sockaddr*)&addr, sizeof(addr));
 
   char tx_buf[128]={0};
-  const char *file_name=filenames300[0];
+  const char *file_name=filenames300[i];
   sprintf(tx_buf,"GET /%s\n\n",file_name);
   size_t tx_len=strlen(tx_buf);
   send(sprite_sock,tx_buf,tx_len,0);
@@ -362,7 +364,8 @@ void get_sprites(){
   elog(log_str);
 
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
-
+  const char* close_msg="\n\n\0";
+    send(sprite_sock,close_msg,sizeof(close_msg),0);
   // Check if destination file exists before renaming
 
 
@@ -374,5 +377,6 @@ void get_sprites(){
       shutdown(sprite_sock, 0);
       close(sprite_sock);
 
-  }
+  };
+
 };

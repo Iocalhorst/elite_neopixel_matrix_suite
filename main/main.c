@@ -28,16 +28,16 @@
 #include "lwip/opt.h"
 
 #include "monster.h"
-#include "mr_display.h"
-
 
 #include "defines.h"
 #include "elite.h"
 #include "elite_pixel_game_ente.h"
+#include "mr_display.h"
 #include "elite_particle.h"
 #include "elite_rain.h"
 #include "tcp_server.h"
 #include "elite_shell.h"
+
 #include "main.h"
 
 //static const char *TAG = "EliteProject Main";
@@ -204,90 +204,25 @@ vTaskDelete(NULL);
 };
 
 
-void main_update_fElapsedTime_global(){
-  int64_t now=esp_timer_get_time();
-  fElapsedTime_global=(float)(now-lastTimeStampInMicroSeconds);
-  fElapsedTime_global*=0.000001f;
-  accumulated_fElapsedTime_global+=fElapsedTime_global;
-  lastTimeStampInMicroSeconds=now;
-};
-
 
 void main_timer_log_task(void *pvParameter){
+  int64_t now=esp_timer_get_time();
+  uint64_t lastTimeStampInMicroSeconds=now;
+  float fElapsedTime=0.0f;
+  float accumulated_fElapsedTime=0.0f;
+
   while (true) {
+    fElapsedTime=(float)(now-lastTimeStampInMicroSeconds);
+    fElapsedTime*=0.000001f;
+    accumulated_fElapsedTime+=fElapsedTime;
     char time_str[256]={0};
-    sprintf(time_str,"INFO : [main_timer_log_task] time=%f\n",accumulated_fElapsedTime_global);
+    sprintf(time_str,"INFO : [main_timer_log_task] time=%f\n",accumulated_fElapsedTime);
     elog(time_str);
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
+    vTaskDelay(15000 / portTICK_PERIOD_MS);
   };
 };
 
-void main_pixel_game_task(void* params){
-  main_theres_a_pixel_game_running=true;
-  main_kill_pixel_game=false;
-  elite_pixel_game_config_t *p_pixel_game_config=(elite_pixel_game_config_t*)params;
 
-  elite_pixel_game_config_t pixel_game_config={
-    .app_name=p_pixel_game_config->app_name,
-    .screen_width=p_pixel_game_config->screen_width,
-    .screen_height=p_pixel_game_config->screen_height,
-    .on_user_construct=p_pixel_game_config->on_user_construct,
-    .on_user_update=p_pixel_game_config->on_user_update,
-    .on_user_destroy=p_pixel_game_config->on_user_destroy
-  };
-
-  //p_pixel_game_config_t pixel_game_config=(pixel_game_config_t)params;
-  //to not fuck up the update window at startup
-  while(ota_has_stopped==false){
-    vTaskDelay(500 / portTICK_PERIOD_MS);
-  };
-
-  vTaskDelay(500 / portTICK_PERIOD_MS);
-  elog("INFO : [main_pixel_game_task] started\n");
-  //int32_t pixelapp_runtime_limit_ms=60000;
-  int32_t pixelapp_runtime_ms=0;
-
-
-  elog("INFO : [main_pixel_game_task] calling elite_pixel_game_construct(pixel_app_config\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-
-  elite_pixel_game_t *p_pixel_game=elite_pixel_game_construct(pixel_game_config);
-
-  elog("INFO : [main_pixel_game_task] finished constructing pixelapp\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-
-  lastTimeStampInMicroSeconds=esp_timer_get_time();
-
-
-  while (true){
-
-    main_update_fElapsedTime_global();
-    elite_pixel_game_update(p_pixel_game,fElapsedTime_global);
-    for (size_t i=0;i<height*width;i++) {pixels[i]=p_pixel_game->p_frame_buf[i];}
-    mr_display_update_leds();
-    vTaskDelay(20/ portTICK_PERIOD_MS);
-    pixelapp_runtime_ms+=20;
-    if (main_kill_pixel_game==true) break;
-  };
-
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  elog("INFO : [rain_app_task] calling elite_pixel_game_destruct()\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-
-  if (elite_pixel_game_destruct(p_pixel_game)==false) {
-      elog("ERROR : [rain_app_task] elite_pixel_game_destruct(p_pixel_app) returned false\n");
-    }else{
-      elog("INFO : [rain_app_task] elite_pixel_game_destruct(p_pixel_app) returned true\n");
-  };
-  vTaskDelay( log_delay/ portTICK_PERIOD_MS);
-  elog("INFO : [rain_app_task] killing rain_app_task\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  main_theres_a_pixel_game_running=false;
-  main_kill_pixel_game=false;
-  //exit_condition=true;
-  vTaskDelete(NULL);
-
-};
 
 void main_start_ota_task(){
   elog("INFO : [main_start_ota_task] entered main_start_ota_task\n");
@@ -363,35 +298,11 @@ void main_reboot(){
   //just for good measure
   free(global_log_buffer);
   esp_vfs_littlefs_unregister(conf.partition_label);
-  elog("INFO : [elite_test_little_fs] LittleFS unmounted");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
-
-        esp_restart();
+  elog("INFO : [main_reboot] LittleFS unmounted\n");
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  esp_restart();
 };
 
-
-
-void main_start_pixel_game_task(){
-  elog("INFO : [main_start_pixel_game_task] entered main_start_pixelapp_task\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  elog("INFO : [main_start_pixel_game_task] creating &pixel_game_task\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  elite_pixel_game_config_t pixel_game_config={
-    .app_name="rain_pixel_app",
-    .screen_width=10,
-    .screen_height=30,
-    .on_user_construct=(void*)&rain_app_construct,
-    .on_user_update=&rain_on_user_update,
-    .on_user_destroy=&rain_on_user_destroy
-  };
-
-  //elog("starting pixel_app task\n");
-  //xTaskCreate(&pixel_app_task, "pixel_app_task", 4096, NULL, 5, NULL);
-  xTaskCreate(&main_pixel_game_task, "main_pixel_game_task", 4096,&pixel_game_config, 5, NULL);
-  elog("INFO : [main_start_pixelapp_task] leaving main_start_pixelapp_task\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-
-};
 
 
 
@@ -400,7 +311,7 @@ void app_main(void){
     elite_init_nvs();
     elite_init_wifi();
     esp_err_t err= esp_timer_early_init();
-    lastTimeStampInMicroSeconds=esp_timer_get_time();
+
 
     ESP_ERROR_CHECK(err);
     ESP_LOGI(TAG, "Waiting 3 seconds for reasons");
@@ -441,7 +352,7 @@ void app_main(void){
 
     while (main_exit_condition!=true) {              //xTaskNotify(p_elite_logger_task_handle,TEST_LOG_CMD,3);//3==eSetValueWithOverwrite
 
-        if (!main_theres_a_pixel_game_running) {
+        if (!elite_theres_a_pixel_game_running) {
               main_clear_display();
               main_draw_background();
               main_draw_monsters();

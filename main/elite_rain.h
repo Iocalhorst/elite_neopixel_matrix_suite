@@ -13,6 +13,9 @@ typedef struct {
 }rain_app_t;
 
 
+bool on_user_update_entered_log=false;
+bool on_user_update_leaving_log=false;
+bool on_user_update_pre_particle_shower_update_log=false;
 
 rain_app_t* rain_app_construct(){
   elog("INFO : [rain_app_construct] entering rain_app_construct()\n");
@@ -40,10 +43,6 @@ rain_app_t* rain_app_construct(){
   return self;
 };
 
-//self->particle_shower=particle_shower_construct();
-bool on_user_update_entered_log=false;
-bool on_user_update_leaving_log=false;
-bool on_user_update_pre_particle_shower_update_log=false;
 bool rain_on_user_update(void* params,elite_pixel_game_t *ente,float fElapsedTime){
   if (on_user_update_entered_log==false) {
     on_user_update_entered_log=true;
@@ -77,13 +76,14 @@ bool rain_on_user_update(void* params,elite_pixel_game_t *ente,float fElapsedTim
 };
 
 bool rain_on_user_destroy(void* params){
-  elog("INFO : [rain_on_user_update] entering rain_app_destroy()\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  rain_app_t *self=(rain_app_t*)params;
-  elog("INFO : [rain_on_user_update] deallocating self(rain_app)\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  if (self!=NULL) {
-    free(self);
+
+    elog("INFO : [rain_on_user_update] entering rain_app_destroy()\n");
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    rain_app_t *self=(rain_app_t*)params;
+    elog("INFO : [rain_on_user_update] deallocating self(rain_app)\n");
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    if (self!=NULL) {
+        free(self);
     elog("INFO : [rain_on_user_update] successfully deallocated self(rain_app)\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
   }else {
@@ -94,4 +94,25 @@ bool rain_on_user_destroy(void* params){
   elog("INFO : [rain_on_user_update] returning true from rain_on_user_destroy()\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
   return true;
+};
+
+
+void rain_start_task(){
+
+    elog("INFO : [main_start_pixel_game_task] entered main_start_pixelapp_task\n");
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    elog("INFO : [main_start_pixel_game_task] creating &pixel_game_task\n");
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    elite_pixel_game_config_t pixel_game_config={
+        .app_name="rain_pixel_app",
+        .screen_width=10,
+        .screen_height=30,
+        .on_user_construct=(void*)&rain_app_construct,
+        .on_user_update=&rain_on_user_update,
+        .on_user_destroy=&rain_on_user_destroy
+    };
+    xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 4096,&pixel_game_config, 5, NULL);
+    elog("INFO : [main_start_pixelapp_task] leaving main_start_pixelapp_task\n");
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
 };

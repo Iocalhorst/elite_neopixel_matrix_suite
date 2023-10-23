@@ -1,4 +1,7 @@
 //abstraction layer between the framebuffer provider and the led driver library
+#include "elite.h"
+#include "elite_pixel_game_ente.h"
+
 #pragma once
 #define LED_STRIP_BLINK_GPIO  26
 // Numbers of the LED in the strip
@@ -7,7 +10,7 @@
 #define LED_STRIP_RMT_RES_HZ  (10 * 1000 * 1000)
 
 
-#include "elite.h"
+
 
 
 led_strip_handle_t led_strip;
@@ -65,7 +68,6 @@ void mr_display_put_pixel(int x,int y,sRGB c){
 };
 
 
-
 void mr_display_update_leds(){
     for (int yy=0;yy<height;yy++){
         for (int xx=0;xx<width;xx++){
@@ -77,6 +79,12 @@ void mr_display_update_leds(){
     ESP_ERROR_CHECK(led_strip_refresh(led_strip));
 
 };
+
+void elite_display_update(sRGB *p_frame_buf){
+  for (size_t i=0;i<height*width;i++) {pixels[i]=p_frame_buf[i];};
+  mr_display_update_leds();
+}
+
 
 
 led_strip_handle_t configure_led_spi(void)
