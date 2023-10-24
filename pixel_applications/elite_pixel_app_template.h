@@ -27,23 +27,23 @@ bool template_pixel_app_on_user_update_leaving_log=false;
 bool template_pixel_app_on_user_update_pre_particle_shower_update_log=false;
 
 
-template_pixel_app_t* template_pixel_app_construct(){
-  elog("INFO : [template_construct] entering template_construct()\n");
+template_pixel_app_t* template_pixel_app_construct(elite_pixel_game_t* ente){
+  elog("INFO : [template_pixel_app_construct] entering template_construct()\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
-  elog("INFO : [template_app_construct] allocating self(template_t)\n");
+  elog("INFO : [template_pixel_app_construct] allocating self(template_t)\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
   template_pixel_app_t *self=malloc(sizeof(template_pixel_app_t));
   if (self!=NULL) {
-    elog("INFO : [template_construct] successfully allocated self(template_t)\n");
+    elog("INFO : [template_pixel_app_construct] successfully allocated self(template_pixel_app_t)\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
   }else {
-    elog("ERROR : [template_construct] failed to allocated self(template_t); returning NULL from constructor\n");
+    elog("ERROR : [template_pixel_app_construct] failed to allocated self(template_pixel_app_t); returning NULL from constructor\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
     return NULL;
   };
   self->app_name="template_pixel_app";//unused
-  elog("INFO : [template_pixel_app_construct] successfully constructed self(template_t); returning self from constructor\n");
+  elog("INFO : [template_pixel_app_construct] successfully constructed self(template_pixel_app_t); returning self from constructor\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
 

@@ -17,7 +17,7 @@ bool on_user_update_entered_log=false;
 bool on_user_update_leaving_log=false;
 bool on_user_update_pre_particle_shower_update_log=false;
 
-rain_app_t* rain_app_construct(){
+rain_app_t* rain_app_construct(elite_pixel_game_t* ente){
   elog("INFO : [rain_app_construct] entering rain_app_construct()\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
 

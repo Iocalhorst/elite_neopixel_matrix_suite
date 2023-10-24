@@ -2,7 +2,7 @@
 //todoooooo: decription
 //todo : implement  setlayer() for additional "user" layer[1,2,3] and stuff
 //todo : come up with a rendering scheme/funtion interface that serves the purpose. wat?
-
+//todo : implement dynamic array. for sprites and stuff;
 #pragma once
 bool elite_theres_a_pixel_game_running=false;
 bool elite_kill_pixel_game=false;
@@ -71,6 +71,87 @@ const sRGB dark_blue={
   .b=16
 };
 
+
+typedef struct {
+  uint16_t width,height;
+  bool load_immediatly;
+  const char* uri;
+}elite_sprite_config_t;
+
+typedef struct {
+  uint16_t width,height;
+  const char* uri;
+  bool load_immediatly;
+  bool load_failed;
+  sRGB *p_bitmap;
+}elite_sprite_t;
+
+
+bool elite_sprite_load_from_file(elite_sprite_t *self){
+  if (self==NULL) return false;
+  if (self->load_failed) return false;
+  char log_str[256]={0};
+  FILE *f=fopen(self->uri,"r");
+  if (f==NULL) {
+    //todo : verbose error message : invalid filename, file doesnt exist, readError
+    sprintf(log_str,"ERROR : [elite_sprite_load_from_file] could not open <%s> for reading\n",self->uri);
+    elog(log_str);
+    vTaskDelay(log_delay/portTICK_PERIOD_MS);
+  return false;
+}else {
+  //todo : verbose error message : invalid filename, file doesnt exist, readError
+  sprintf(log_str,"INFO : [elite_sprite_load_from_file] opened <%s> for reading\n",self->uri);
+  elog(log_str);
+  vTaskDelay(log_delay/portTICK_PERIOD_MS);
+
+};
+  self->p_bitmap=(sRGB*)malloc(sizeof(sRGB)*self->height*self->width);
+  if (self->p_bitmap==NULL) {
+    fclose(f);
+    elog("ERROR : [elite_sprite_load_from_file] malloc fail\n");
+    vTaskDelay(log_delay/portTICK_PERIOD_MS);
+    return false;
+  }{elog("INFO : [elite_sprite_load_from_file] malloc success");};
+  if (fread(self->p_bitmap,1,self->width*self->height*3,f)!=self->width*self->height*3){
+    free(self->p_bitmap);
+    fclose(f);
+    elog("ERROR : [elite_sprite_load_from_file] fread() fail\n");
+    vTaskDelay(log_delay/portTICK_PERIOD_MS);
+    return false;
+  };
+  fclose(f);
+  sprintf(log_str,"INFO: [elite_sprite_load_from_file] loaded <%s>\n",self->uri);
+
+  elog(log_str);
+  vTaskDelay(log_delay/portTICK_PERIOD_MS);
+  elog("INFO : [elite_sprite_load_from_file] leaving elite_sprite_load_from_file, true\n");
+  return true;
+
+};
+
+
+elite_sprite_t *elite_sprite_construct(elite_sprite_config_t config){
+    char log_str[256]={0};
+    elog("INFO : [spriteshow_construct] entering elite_sprite_construct()\n");
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+    elite_sprite_t *self=(elite_sprite_t*)malloc(sizeof(elite_sprite_t));
+    self->uri=config.uri;
+    self->height=config.height;
+    self->width=config.width;
+    self->load_immediatly=config.load_immediatly;
+    if (elite_sprite_load_from_file(self)) {
+      sprintf(log_str,"INFO : [elite_sprite_construct] loaded sprite from file <%s> loaded",self->uri);
+      elog(log_str);
+      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    };
+    //if (self->load_immediatly) self->load_failed=elite_sprite_load_from_file(self);
+    elog("INFO : [elite_sprite_construct] leaving elite_sprite_construct()\n");
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+    return self;
+};
+
 typedef struct s_elite_pixel_game elite_pixel_game_t;
 
 typedef struct{
@@ -79,7 +160,7 @@ typedef struct{
   uint16_t screen_height;
   uint16_t num_layers;
   bool (*on_user_update)(void*,elite_pixel_game_t*,float);
-  void* (*on_user_construct)();
+  void* (*on_user_construct)(elite_pixel_game_t*);
   bool (*on_user_destroy)(void*);
 }elite_pixel_game_config_t;
 
@@ -102,7 +183,7 @@ struct s_elite_pixel_game {
     void *user;
     //the updateFunction should take care of at least populating p_layer[0] with sfRGB data
     bool (*on_user_update)(void*,elite_pixel_game_t*,float);
-    void* (*on_user_construct)();
+    void* (*on_user_construct)(elite_pixel_game_t*);
     bool (*on_user_destroy)(void*);
     uint64_t lastTimeStampInMicroSeconds;
     float fElapsedTime;
@@ -232,7 +313,7 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
     }
     elog("INFO : [elite_pixel_game_construct] calling self->on_user_construct()\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
-    self->user=(void*)self->on_user_construct();
+    self->user=(void*)self->on_user_construct(self);
     if (self->user!=NULL) {
       elog("INFO : [elite_pixel_game_construct] on_user_construct returned instance. registered\n");
       vTaskDelay(log_delay / portTICK_PERIOD_MS);
