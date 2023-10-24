@@ -80,17 +80,17 @@ typedef struct {
 
 typedef struct {
   uint16_t width,height;
-  const char* uri;
+  char* url;
   bool load_immediatly;
-  bool _load_failed;
+  bool load_failed;
   sRGB *p_bitmap;
 }elite_sprite_t;
 
 
 //todo : int elite_err_t elite_sprite_load_bla();
-bool elite_sprite_load_from_file(elite_sprite_t *self){
+bool elite_sprite_load(elite_sprite_t *self){
   if (self==NULL) return false;
-  if (self->_load_failed) return false;
+  if (self->load_failed) return false;
   char log_str[256]={0};
   FILE *f=fopen(self->uri,"r");
   if (f==NULL) {
@@ -106,26 +106,37 @@ bool elite_sprite_load_from_file(elite_sprite_t *self){
   vTaskDelay(log_delay/portTICK_PERIOD_MS);
 
 };
-  self->p_bitmap=(sRGB*)malloc(sizeof(sRGB)*self->height*self->width);
-  if (self->p_bitmap==NULL) {
-    fclose(f);
-    elog("ERROR : [elite_sprite_load_from_file] malloc fail\n");
+
+  if (self->p_bitmap!=NULL) {
+    elog("INFO : [elite_sprite_load_from_file] overwriting data at self->p_bitmap\n");
     vTaskDelay(log_delay/portTICK_PERIOD_MS);
-    return false;
-  }{elog("INFO : [elite_sprite_load_from_file] malloc success");};
+    }else {
+      self->p_bitmap=(sRGB*)malloc(sizeof(sRGB)*self->height*self->width);
+      if (self->p_bitmap==NULL) {
+        fclose(f);
+        elog("ERROR : [elite_sprite_load_from_file] malloc fail\n");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+        return false;
+      }else{
+        elog("INFO : [elite_sprite_load_from_file] malloc success");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+      };
+    };
+
   if (fread(self->p_bitmap,1,self->width*self->height*3,f)!=self->width*self->height*3){
-    free(self->p_bitmap);
-    fclose(f);
-    elog("ERROR : [elite_sprite_load_from_file] fread() fail\n");
-    vTaskDelay(log_delay/portTICK_PERIOD_MS);
-    return false;
+      free(self->p_bitmap);
+      fclose(f);
+      elog("ERROR : [elite_sprite_load_from_file] fread() fail\n");
+      vTaskDelay(log_delay/portTICK_PERIOD_MS);
+      return false;
   };
   fclose(f);
-  sprintf(log_str,"INFO: [elite_sprite_load_from_file] loaded <%s>\n",self->uri);
 
+  sprintf(log_str,"INFO: [elite_sprite_load_from_file] loaded <%s>\n",self->uri);
   elog(log_str);
   vTaskDelay(log_delay/portTICK_PERIOD_MS);
   elog("INFO : [elite_sprite_load_from_file] leaving elite_sprite_load_from_file, true\n");
+
   return true;
 
 };
@@ -141,7 +152,7 @@ elite_sprite_t *elite_sprite_construct(elite_sprite_config_t config){
     self->height=config.height;
     self->width=config.width;
     self->load_immediatly=config.load_immediatly;
-    self->_load_failed=false;
+    self->load_failed=false;
     if (elite_sprite_load_from_file(self)) {
       sprintf(log_str,"INFO : [elite_sprite_construct] loaded sprite from file <%s> loaded",self->uri);
       elog(log_str);

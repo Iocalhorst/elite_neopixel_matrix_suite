@@ -24,6 +24,9 @@
 typedef struct{
   int container_state;
   int container_current_resource_index;
+  elite_sprite_t *p_current_sprite;
+  elite_sprite_t *p_next_sprite;
+  bool block_loading;
   float state_timer;
   float initial_hold_time;
   float hold_time,fade_in_time,fade_out_time;
@@ -62,6 +65,7 @@ bool sprite_container_update(sprite_container_t *self,float fElapsedTime){
         if (self->state_timer<=0.0f) {
           self->state_timer=self->fade_hold_time;
           self->container_state=STATE_HOLD;
+          self->has_been_reloaded=false;
         break;
       };
     case : STATE_HOLD {
@@ -143,6 +147,7 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
       self->p_sprite_containers[i].fade_in_time=1.0f;
       self->p_sprite_containers[i].hold_time=10.0f;
       self->p_sprite_containers[i].fade_out_time=1.0f;
+      self->p_sprite_containers[i].has_been_reloaded=true;
     };
 
 
@@ -191,6 +196,7 @@ for (int y=0;y<self->test_sprite->height;y++) {
     }
 
   for (int i=0;i<self->num_sprite_containers;i++) sprite_container_update(&self->p_sprite_containers[i],fElapsedTime);
+
   bool all_containers_on_hold=true;
   for (int i=0;i<self->num_sprite_containers;i++) {
     if (self->p_sprite_containers[i].container_state!=STATE_HOLD) {
@@ -198,10 +204,23 @@ for (int y=0;y<self->test_sprite->height;y++) {
       break;
     };
   };
+
+
   if (all_containers_on_hold) {
-    //fetch_next()
-    //advance()
-      //for (int i=0;i<self->num_sprite_containers;i++) sprite_container_fetch_next(self->p_sprite_container[i],);
+    for (size_t i=0;i<self->num_sprite_containers;i++) {
+      if (self->p_sprite_containers[i].has_been_reloaded==true) break;
+      self->p_sprite_containers[i].container_current_resource_index+=1;
+      self->p_sprite_containers[i].container_current_resource_index%=self->num_resources;
+      self->p_sprite_containers[i].url=self->urls[self->p_sprite_containers[i].container_current_resource_index];
+      if (elite_sprite_load(self->p_sprite_containers[i].p_next_sprite)==false) {
+        self->p_sprite_containers[i].container_state=STATE_ERROR;
+        elog("ERROR : [spriteshow_on_user_update] elite_sprite_load(p_next_sprite) failed");
+        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      }else{
+        elog("INFO : [spriteshow_on_user_update] elite_sprite_load(p_next_sprite) succeeded");
+        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      };
+    };
   };
   for (int i=0;i<self->num_sprite_containers;i++) sprite_container_draw(&self->p_sprite_containers[i],ente);
 
