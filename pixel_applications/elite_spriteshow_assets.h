@@ -1,6 +1,6 @@
 
 #define NUM_URLS 267
-char* uris[NUM_URLS]={
+const char* uris[NUM_URLS]={
 "nes11.raw",
 "col_3_6.raw",
 "col_3_14b.raw",

@@ -23,6 +23,12 @@ typedef struct {
   float fr,fg,fb;
 }sfRGB;
 
+
+typedef struct {
+  float fr,fg,fb,fa;
+}sfRGBA;
+
+
 void elite_display_update(sRGB *p_frame_buf);
 
 const sRGB pink={
@@ -75,12 +81,12 @@ const sRGB dark_blue={
 typedef struct {
   uint16_t width,height;
   bool load_immediatly;
-  const char* uri;
+  char url[ESP_VFS_PATH_MAX];
 }elite_sprite_config_t;
 
 typedef struct {
   uint16_t width,height;
-  char* url;
+  char url[ESP_VFS_PATH_MAX];
   bool load_immediatly;
   bool load_failed;
   sRGB *p_bitmap;
@@ -92,33 +98,33 @@ bool elite_sprite_load(elite_sprite_t *self){
   if (self==NULL) return false;
   if (self->load_failed) return false;
   char log_str[256]={0};
-  FILE *f=fopen(self->uri,"r");
+  FILE *f=fopen(self->url,"r");
   if (f==NULL) {
     //todo : verbose error message : invalid filename, file doesnt exist, readError
-    sprintf(log_str,"ERROR : [elite_sprite_load_from_file] could not open <%s> for reading\n",self->uri);
+    sprintf(log_str,"ERROR : [elite_sprite_load] could not open <%s> for reading\n",self->url);
     elog(log_str);
     vTaskDelay(log_delay/portTICK_PERIOD_MS);
   return false;
 }else {
   //todo : verbose error message : invalid filename, file doesnt exist, readError
-  sprintf(log_str,"INFO : [elite_sprite_load_from_file] opened <%s> for reading\n",self->uri);
+  sprintf(log_str,"INFO : [elite_sprite_load] opened <%s> for reading\n",self->url);
   elog(log_str);
   vTaskDelay(log_delay/portTICK_PERIOD_MS);
 
 };
 
   if (self->p_bitmap!=NULL) {
-    elog("INFO : [elite_sprite_load_from_file] overwriting data at self->p_bitmap\n");
+    elog("INFO : [elite_sprite_load] overwriting data at self->p_bitmap\n");
     vTaskDelay(log_delay/portTICK_PERIOD_MS);
     }else {
       self->p_bitmap=(sRGB*)malloc(sizeof(sRGB)*self->height*self->width);
       if (self->p_bitmap==NULL) {
         fclose(f);
-        elog("ERROR : [elite_sprite_load_from_file] malloc fail\n");
+        elog("ERROR : [elite_sprite_load] malloc fail\n");
         vTaskDelay(log_delay/portTICK_PERIOD_MS);
         return false;
       }else{
-        elog("INFO : [elite_sprite_load_from_file] malloc success");
+        elog("INFO : [elite_sprite_load] malloc success");
         vTaskDelay(log_delay/portTICK_PERIOD_MS);
       };
     };
@@ -126,16 +132,16 @@ bool elite_sprite_load(elite_sprite_t *self){
   if (fread(self->p_bitmap,1,self->width*self->height*3,f)!=self->width*self->height*3){
       free(self->p_bitmap);
       fclose(f);
-      elog("ERROR : [elite_sprite_load_from_file] fread() fail\n");
+      elog("ERROR : [elite_sprite_load] fread() fail\n");
       vTaskDelay(log_delay/portTICK_PERIOD_MS);
       return false;
   };
   fclose(f);
 
-  sprintf(log_str,"INFO: [elite_sprite_load_from_file] loaded <%s>\n",self->uri);
+  sprintf(log_str,"INFO: [elite_sprite_load] loaded <%s>\n",self->url);
   elog(log_str);
   vTaskDelay(log_delay/portTICK_PERIOD_MS);
-  elog("INFO : [elite_sprite_load_from_file] leaving elite_sprite_load_from_file, true\n");
+  elog("INFO : [elite_sprite_load] leaving elite_sprite_load, true\n");
 
   return true;
 
@@ -148,17 +154,18 @@ elite_sprite_t *elite_sprite_construct(elite_sprite_config_t config){
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
     elite_sprite_t *self=(elite_sprite_t*)malloc(sizeof(elite_sprite_t));
-    self->uri=config.uri;
+    memset(&self->url, 0, sizeof(self->url));
+    strncpy(self->url,config.url,strlen(config.url));//lol
     self->height=config.height;
     self->width=config.width;
     self->load_immediatly=config.load_immediatly;
     self->load_failed=false;
-    if (elite_sprite_load_from_file(self)) {
-      sprintf(log_str,"INFO : [elite_sprite_construct] loaded sprite from file <%s> loaded",self->uri);
+    if (elite_sprite_load(self)) {
+      sprintf(log_str,"INFO : [elite_sprite_construct] loaded sprite from file <%s> loaded",self->url);
       elog(log_str);
       vTaskDelay(log_delay / portTICK_PERIOD_MS);
     };
-    //if (self->load_immediatly) self->load_failed=elite_sprite_load_from_file(self);
+    //if (self->load_immediatly) self->load_failed=elite_sprite_load(self);
     elog("INFO : [elite_sprite_construct] leaving elite_sprite_construct()\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
@@ -187,7 +194,7 @@ struct s_elite_pixel_game {
     bool user_construct_done;
     bool user_construct_failed;
     elite_pixel_game_config_t config;
-
+    uint16_t screen_width,screen_height;//actual "usable" witdh/height since referencing the config is verbooten
     sRGB *p_frame_buf;
     size_t p_frame_buf_size;
     layer_fRGB *p_layer[4];
@@ -209,22 +216,19 @@ struct s_elite_pixel_game {
 
 };
 
-//typedef bool (*onUserUpdate)(float fElapsedTime);
 
+//forward function declarations
+elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config);
 bool elite_pixel_game_set_target_layer(elite_pixel_game_t *self,int tl);
-//elite_pixel_game_t elite_pixel_game={0};
 bool elite_pixel_game_render_to_framebuf(elite_pixel_game_t *self);
-
 bool elite_pixel_game_fill_layer(elite_pixel_game_t *self,sRGB fill_col);
 bool elite_pixel_game_fill_flayer(elite_pixel_game_t *self,sfRGB fill_fcol);
-
 bool elite_pixel_game_putpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sRGB col);
 bool elite_pixel_game_fputpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGB col);
-
-elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config);
-
+bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGBA col);
 bool elite_pixel_game_destruct(elite_pixel_game_t *self);
 
+//function definitions
 
 elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config){
 //we need to check for valid configuration
@@ -248,6 +252,8 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
       return NULL;
     };
   self->config=config;
+  self->screen_height=0;//we dont know yet if the user config parameters will hold up
+  self->screen_width=0;
   self->target_layer=-1;
   elog("INFO : [elite_pixel_game_construct] configuration set\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
@@ -258,6 +264,7 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
   if (self->p_frame_buf!=NULL) {
     elog("INFO : [elite_pixel_game_construct] p_frame_buf allocated\n");
     self->p_frame_buf_size=self->config.screen_width*self->config.screen_height*sizeof(sRGB);
+
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
   }else{
     elog("ERROR : [elite_pixel_game_construct] failed to allocate p_frame_buf\n");
@@ -280,6 +287,8 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
     if (self->p_layer[0]->pixels!=NULL) {
       elog("INFO : [elite_pixel_game_construct] p_layer[0].pixels allocated\n");
       self->num_layers=1;
+      self->screen_height=self->config.screen_height;
+      self->screen_width=self->config.screen_width;
       self->target_layer=0;
       vTaskDelay(log_delay / portTICK_PERIOD_MS);
     }else{
@@ -467,41 +476,88 @@ bool elite_pixel_game_set_target_layer(elite_pixel_game_t *self,int tl){
 bool elite_pixel_game_fputpixel_entered_log=false;
 bool elite_pixel_game_fputpixel_leaving_log=false;
 bool elite_pixel_game_fputpixel_dont_hurt_the__canvas_log=false;
+
 static uint32_t canvas_hurt_count=0;
 
 
 bool elite_pixel_game_fputpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGB col){
 //tracing pre
-  if (elite_pixel_game_fputpixel_entered_log==false) {
+    if (elite_pixel_game_fputpixel_entered_log==false) {
         elite_pixel_game_fputpixel_entered_log=true;
         elog("INFO : [elite_pixel_game_fputpixel] entered elite_pixel_game_fputpixel() - this notification will only occur once\n");
         vTaskDelay(log_delay / portTICK_PERIOD_MS);
       };
-
-
 //body
-if ((x>=0)&&(x<self->config.screen_width)&&(y>=0)&&(y<self->config.screen_height)) {
-  self->p_layer[self->target_layer]->pixels[y*self->config.screen_width+x]=col;
-}else{
-  canvas_hurt_count+=1;
-  if (elite_pixel_game_fputpixel_dont_hurt_the__canvas_log==false) {
-        elite_pixel_game_fputpixel_dont_hurt_the__canvas_log=true;
-        elog("ERROR : [elite_pixel_game_fputpixel] You've hurt the canvas. You're not supposed to hurt the canvas! - this notification will only occur once\n");
-        char hurt_str2[256]={0};
-        sprintf(hurt_str2,"details : \n config.screen_width=%i\n config.screen_height=%i\n x=%i y=%i\n",self->config.screen_width,self->config.screen_height,x,y);
-        elog(hurt_str2);
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
-      };
+    if ((x>=0)&&(x<self->config.screen_width)&&(y>=0)&&(y<self->config.screen_height)) {
+        self->p_layer[self->target_layer]->pixels[y*self->config.screen_width+x]=col;
+    }else{
+        canvas_hurt_count+=1;
+        if (elite_pixel_game_fputpixel_dont_hurt_the__canvas_log==false) {
+            elite_pixel_game_fputpixel_dont_hurt_the__canvas_log=true;
+            elog("ERROR : [elite_pixel_game_fputpixel] You've hurt the canvas. You're not supposed to hurt the canvas! - this notification will only occur once\n");
+            char hurt_str2[256]={0};
+            sprintf(hurt_str2,"details : \n config.screen_width=%i\n config.screen_height=%i\n x=%i y=%i\n",self->config.screen_width,self->config.screen_height,x,y);
+            elog(hurt_str2);
+            vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        };
 
-};
-
-
-
+    };
 //tracing post
-if (elite_pixel_game_fputpixel_leaving_log==false) {
+    if (elite_pixel_game_fputpixel_leaving_log==false) {
       elite_pixel_game_fputpixel_leaving_log=true;
       elog("INFO : [elite_pixel_game_fputpixel] leaving elite_pixel_game_fputpixel() - this notification will only occur once\n");
       vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    };
+    return true;
+};
+
+bool elite_pixel_game_fputpixelRGBA_entered_log=false;
+bool elite_pixel_game_fputpixelRGBA_leaving_log=false;
+bool elite_pixel_game_fputpixelRGBA_dont_hurt_the__canvas_log=false;
+
+bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGBA src_col){
+//tracing pre
+    if (elite_pixel_game_fputpixelRGBA_entered_log==false) {
+        elite_pixel_game_fputpixelRGBA_entered_log=true;
+        elog("INFO : [elite_pixel_game_fputpixelRGBA] entered elite_pixel_game_fputpixelRGBA() - this notification will only occur once\n");
+        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    };
+
+//body
+    if ((x>=0)&&(x<self->config.screen_width)&&(y>=0)&&(y<self->config.screen_height)) {
+        sfRGB fmixed_color;
+        //rubbish alpha blending implementation
+        fmixed_color.fr=self->p_layer[self->target_layer]->pixels[y*self->config.screen_width+x].fr;
+        fmixed_color.fg=self->p_layer[self->target_layer]->pixels[y*self->config.screen_width+x].fg;
+        fmixed_color.fb=self->p_layer[self->target_layer]->pixels[y*self->config.screen_width+x].fb;
+        fmixed_color.fr*=(1.0f-(src_col.fa/255.0f));
+        fmixed_color.fg*=(1.0f-(src_col.fa/255.0f));
+        fmixed_color.fb*=(1.0f-(src_col.fa/255.0f));
+        fmixed_color.fr+=src_col.fr*(src_col.fa/255.0f);
+        fmixed_color.fg+=src_col.fg*(src_col.fg/255.0f);
+        fmixed_color.fb+=src_col.fb*(src_col.fb/255.0f);
+
+        self->p_layer[self->target_layer]->pixels[y*self->config.screen_width+x]=fmixed_color;
+
+    }else{
+        canvas_hurt_count+=1;
+        if (elite_pixel_game_fputpixelRGBA_dont_hurt_the__canvas_log==false) {
+            elite_pixel_game_fputpixelRGBA_dont_hurt_the__canvas_log=true;
+            elog("ERROR : [elite_pixel_game_fputpixelRGBA] You've hurt the canvas. You're not supposed to hurt the canvas! - this notification will only occur once\n");
+            char hurt_str2[256]={0};
+            sprintf(hurt_str2,"details : \n config.screen_width=%i\n config.screen_height=%i\n x=%i y=%i\n",self->config.screen_width,self->config.screen_height,x,y);
+            elog(hurt_str2);
+            vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+        };
+    return false;
+    };
+
+//tracing post
+    if (elite_pixel_game_fputpixelRGBA_leaving_log==false) {
+        elite_pixel_game_fputpixelRGBA_leaving_log=true;
+        elog("INFO : [elite_pixel_game_fputpixelRGBA] leaving elite_pixel_game_fputpixel() - this notification will only occur once\n");
+        vTaskDelay(log_delay / portTICK_PERIOD_MS);
     };
 
     return true;
