@@ -82,14 +82,15 @@ typedef struct {
   uint16_t width,height;
   const char* uri;
   bool load_immediatly;
-  bool load_failed;
+  bool _load_failed;
   sRGB *p_bitmap;
 }elite_sprite_t;
 
 
+//todo : int elite_err_t elite_sprite_load_bla();
 bool elite_sprite_load_from_file(elite_sprite_t *self){
   if (self==NULL) return false;
-  if (self->load_failed) return false;
+  if (self->_load_failed) return false;
   char log_str[256]={0};
   FILE *f=fopen(self->uri,"r");
   if (f==NULL) {
@@ -140,6 +141,7 @@ elite_sprite_t *elite_sprite_construct(elite_sprite_config_t config){
     self->height=config.height;
     self->width=config.width;
     self->load_immediatly=config.load_immediatly;
+    self->_load_failed=false;
     if (elite_sprite_load_from_file(self)) {
       sprintf(log_str,"INFO : [elite_sprite_construct] loaded sprite from file <%s> loaded",self->uri);
       elog(log_str);

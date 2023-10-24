@@ -5,19 +5,39 @@
 
 #pragma once
 
+
+#include "elite_spriteshow_assets.h"
+
+//since on-demand loading of resources from flash or external locations is noticably time-consuming(seconds maybe even),
+//instead of fetching resources "just-in-time" - at the end of the cyle (after fading out the last resources)
+//we want to pre-fetch "early" - specifically during the hold-time of the current resource
+//this avoids lags/delays when swapping the content and fading back in again when using alpha-blending for transitioning
+//and works in favor of (possible) spatial transitioning effects
+#define STATE_ERROR -1
+#define STATE_INITIAL_HOLD 0 //we use this state to offset the individual container timings a little
+#define STATE_FADE_IN 1
+#define STATE_HOLD 2
+#define STATE_FETCH_NEXT 3
+#define STATE_FADE_OUT 4
+#define STATE_SWAP_SPRITE 5
+
+typedef struct{
+  int container_state;
+  int container_current_resource_index;
+  float state_timer;
+  float initial_hold_time;
+  float hold_time,fade_in_time,fade_out_time;
+}sprite_container_t;
+
 typedef struct {
   char* app_name;
+  uint16_t num_resources;
+  char *resource_locations[NUM_URLS];
+  uint8_t num_sprite_containers;
+  sprite_container_t *p_sprite_containers;
   elite_sprite_t *test_sprite;
-  /*
-  declare assets here like so
 
-  void* some_user_asset;
-  void* another_user_asset;
-  int x,y,z;
-  bool some_flag,another_flag;
-  bool game_over_flag;
 
-  */
 
 }spriteshow_t;
 
@@ -26,6 +46,71 @@ bool spriteshow_on_user_update_entered_log=false;
 bool spriteshow_on_user_update_leaving_log=false;
 bool spriteshow_on_user_update_pre_particle_shower_update_log=false;
 
+
+bool sprite_container_update(sprite_container_t *self,float fElapsedTime){
+  switch (self->container_state) {
+    case : STATE_INITIAL_HOLD {
+        self->state_timer-=fElapsedTime;
+        if (self->state_timer<=0.0f) {
+          self->state_timer=self->fade_in_time;
+          self->container_state=STATE_FADE_IN;
+        };
+        break;
+      };
+    case : STATE_FADE_IN {
+        self->state_timer-=fElapsedTime;
+        if (self->state_timer<=0.0f) {
+          self->state_timer=self->fade_hold_time;
+          self->container_state=STATE_HOLD;
+        break;
+      };
+    case : STATE_HOLD {
+        self->state_timer-=fElapsedTime;
+        if (self->state_timer<=0.0f) {
+          self->state_timer=self->fade_out_time;
+          self->container_state=STATE_FADE_OUT;
+          //
+          //We do not (asynchronously) retrieve self->p_next_sprite in here!
+          //
+          //reason :      retrieval might cause blocking calls(sockets,flash memory reads etc) when resource aquisition is performed
+          //              and cause pending/"fading" containers to hang/lag
+          //workaround :  we do assing p_next_sprite synchronously in the on_user_update for all containers at once,
+          //              ensuring that all containers are on hold at this point
+          //note :        proper time span tolerances must be taken into account
+          //              this workaround can be removed if non-blocking resources retrieval is implemented
+          //todo :        implement non blocking resource aquisition
+        };
+        break;
+      };
+    case : STATE_FADE_OUT {
+        self->state_timer-=fElapsedTime;
+        if (self->state_timer<=0.0f) {
+            self->state_timer=self->fade_in_time;
+            self->container_state=STATE_FADE_IN;
+            self->p_current_sprite=self->p_next_sprite;
+        };
+        break;
+      };
+    case : STATE_ERROR {
+        break;
+    };
+    default : {
+        self->container_state=STATE_ERROR;
+        //unreachable;
+        return false;
+        break;
+      };
+  };
+
+    if (self->state_timer<=0.0f) {self->container_state=STATE_FADE_IN;};
+  }
+
+  return true;
+};
+
+bool sprite_container_draw(sprite_container_t *self,elite_pixel_game_t *ente){
+  return true;
+};
 
 spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
   elog("INFO : [spriteshow_construct] entering spriteshow_construct()\n");
@@ -43,6 +128,23 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
     return NULL;
   };
   self->app_name="spriteshow";//unused
+  self->num_resources=NUM_URLS;
+  for (size_t r=0;r<NUM_URLS;r++) self->resource_locations[r]=uris[r];
+
+  self->num_sprite_containers=3;
+  self->p_sprite_containers=(sprite_container_t*)malloc(sizeof(sprite_container_t)*self->num_sprite_containers);
+  if (self->p_sprite_containers==NULL) {
+      //todo error message+handling
+      return NULL;
+    };
+  for (int i=0;i<self->num_sprite_containers;i++){
+      self->p_sprite_containers[i].container_state=STATE_INITIAL_HOLD;
+      self->p_sprite_containers[i].initial_hold_time=0.5f*i;
+      self->p_sprite_containers[i].fade_in_time=1.0f;
+      self->p_sprite_containers[i].hold_time=10.0f;
+      self->p_sprite_containers[i].fade_out_time=1.0f;
+    };
+
 
   elite_sprite_config_t test_sprite_config={
     .width=10,
@@ -87,6 +189,22 @@ for (int y=0;y<self->test_sprite->height;y++) {
           elite_pixel_game_fputpixel(ente,x,y+10,cf);
         };
     }
+
+  for (int i=0;i<self->num_sprite_containers;i++) sprite_container_update(&self->p_sprite_containers[i],fElapsedTime);
+  bool all_containers_on_hold=true;
+  for (int i=0;i<self->num_sprite_containers;i++) {
+    if (self->p_sprite_containers[i].container_state!=STATE_HOLD) {
+      all_containers_on_hold=false;
+      break;
+    };
+  };
+  if (all_containers_on_hold) {
+    //fetch_next()
+    //advance()
+      //for (int i=0;i<self->num_sprite_containers;i++) sprite_container_fetch_next(self->p_sprite_container[i],);
+  };
+  for (int i=0;i<self->num_sprite_containers;i++) sprite_container_draw(&self->p_sprite_containers[i],ente);
+
 };
 
 //debug tracing out
