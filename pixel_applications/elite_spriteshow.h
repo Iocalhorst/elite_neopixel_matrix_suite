@@ -96,11 +96,11 @@ bool sprite_container_sum(sprite_container_t *self,elite_pixel_game_t *ente){
     uint16_t b_sum=0;
 
 
-    for (size_t i=0;i<self->_p_current_sprite->height;i++) {
-        for (size_t j=0;j<self->_p_current_sprite->width;j++) {
-            r_sum+=self->_p_current_sprite->_p_bitmap[i].r;
-            g_sum+=self->_p_current_sprite->_p_bitmap[i].g;
-            b_sum+=self->_p_current_sprite->_p_bitmap[i].b;
+    for (size_t i=0;i<10;i++) {//self->_p_current_sprite->height;
+        for (size_t j=0;j<10;j++) {//self->_p_current_sprite->height;
+            r_sum+=self->_p_current_sprite->_p_bitmap[i*10+j].r;
+            g_sum+=self->_p_current_sprite->_p_bitmap[i*10+j].g;
+            b_sum+=self->_p_current_sprite->_p_bitmap[i*10+j].b;
 
             /*c_tmp.fr=25.0f;
             c_tmp.fg=127.0f;
@@ -250,9 +250,9 @@ bool sprite_container_draw(sprite_container_t *self,elite_pixel_game_t *ente){
     for (size_t i=0;i<self->_p_current_sprite->height;i++) {
         for (size_t j=0;j<self->_p_current_sprite->width;j++) {
             sfRGB c_tmp;
-            c_tmp.fr=self->_p_current_sprite->_p_bitmap[i].r;
-            c_tmp.fg=self->_p_current_sprite->_p_bitmap[i].g;
-            c_tmp.fb=self->_p_current_sprite->_p_bitmap[i].b;
+            c_tmp.fr=self->_p_current_sprite->_p_bitmap[i*10+j].r;
+            c_tmp.fg=self->_p_current_sprite->_p_bitmap[i*10+j].g;
+            c_tmp.fb=self->_p_current_sprite->_p_bitmap[i*10+j].b;
             /*c_tmp.fr=25.0f;
             c_tmp.fg=127.0f;
             c_tmp.fb=25.0f;*/
