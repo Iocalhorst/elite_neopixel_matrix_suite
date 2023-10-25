@@ -401,7 +401,7 @@ bool spriteshow_on_user_update(void* params,elite_pixel_game_t *ente,float fElap
 //body
     spriteshow_t *self=(spriteshow_t*)params;
     elite_pixel_game_set_target_layer(ente,0);
-    sfRGB c={0.0f,64.0f,0.0f};
+    sfRGB c={0.0f,32.0f,0.0f};
     elite_pixel_game_fill_flayer(ente,c);
 
     /*for (int y=0;y<self->test_sprite->height;y++) {
