@@ -75,6 +75,7 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
   //if (cmd==0&&!strcmp(buf,"getsprites\n\0"))cmd=8;
   if (cmd==0&&!strcmp(buf,"template\n\0"))cmd=9;
   if (cmd==0&&!strcmp(buf,"spriteshow\n\0"))cmd=10;
+  if (cmd==0&&!strcmp(buf,"sum\n\0"))cmd=11;
 
 
   char* wtf_str="wtf?\n";
@@ -117,15 +118,25 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
         break;
     };
     case 9 : {
-        if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false)
-        template_pixel_app_start_task();
+        if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false){
+            template_pixel_app_start_task();
+        };
         break;
-    };
+      };
     case 10 : {
-        if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false)
-        spriteshow_start_task();
+        if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false){
+            spriteshow_start_task();
+        };
         break;
     };
+    case 11 : {
+        if(elite_theres_a_pixel_game_running==true&&elite_kill_pixel_game==false){
+          elog("DEBUG : [elite_shell_handle_input] setting sum_flag\n");
+            sum_flag=true;
+        };
+        break;
+    };
+
     default : {
       send(outfd,wtf_str,strlen(wtf_str),flags);
       return true;

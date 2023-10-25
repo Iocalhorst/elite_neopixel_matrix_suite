@@ -17,6 +17,7 @@
 #define STATE_FADE_OUT 4
 #define STATE_SWAP_SPRITE 5
 
+
 typedef struct{
   int container_state;
   int _current_resource_index;
@@ -44,10 +45,94 @@ typedef struct {
   elite_sprite_t *test_sprite;
 }spriteshow_t;
 
-
+static bool sum_flag=true;
 bool spriteshow_on_user_update_entered_log=false;
 bool spriteshow_on_user_update_leaving_log=false;
 bool spriteshow_on_user_update_pre_particle_shower_update_log=false;
+
+
+
+bool sprite_container_sum_entered_log=false;
+bool sprite_container_sum_leaving_log=false;
+bool sprite_container_sum(sprite_container_t *self,elite_pixel_game_t *ente){
+
+    //trace in
+    if (sprite_container_sum_entered_log==false) {
+        sprite_container_sum_entered_log=true;
+        elog("DEBUG : [sprite_container_sum] entered sprite_container_sum() - once\n");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+    }
+
+    //debug_block
+    if (self==NULL||ente==NULL) {
+        elog("DEBUG : [sprite_container_sum] @param *self==nullptr\n");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+        return false;
+    };
+    if (self->_p_current_sprite==NULL) {
+        elog("DEBUG : [sprite_container_sum] self->_p_current_sprite==nullptr\n");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+        return false;
+    };
+    if (self->_p_current_sprite->load_failed==true) {
+        elog("DEBUG : [sprite_container_sum] self->load_failed==true\n");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+        return false;
+    };
+    if (self->_p_current_sprite->height==0||self->_p_current_sprite->width==0) {
+        elog("DEBUG : [sprite_container_sum] _p_current_sprite->height==0||self->_p_current_sprite->width==0\n");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+        return false;
+    };
+    if (self->_p_current_sprite->_p_bitmap==NULL) {
+        elog("DEBUG : [sprite_container_sum] _p_bitmap==nullptr\b");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+        return false;
+    };
+
+
+    uint16_t r_sum=0;
+    uint16_t g_sum=0;
+    uint16_t b_sum=0;
+
+
+    for (size_t i=0;i<self->_p_current_sprite->height;i++) {
+        for (size_t j=0;j<self->_p_current_sprite->width;j++) {
+            r_sum+=self->_p_current_sprite->_p_bitmap[i].r;
+            g_sum+=self->_p_current_sprite->_p_bitmap[i].g;
+            b_sum+=self->_p_current_sprite->_p_bitmap[i].b;
+
+            /*c_tmp.fr=25.0f;
+            c_tmp.fg=127.0f;
+            c_tmp.fb=25.0f;*/
+            //c_tmp.fa=255.0f;
+            //c_tmp.fa=255.0f*self->_falpha_modulator;
+            //TODO : update _sprite_offset_fx,_sprite_offset_fx on some lovely sunny day
+            //int x=self->_pos_x+(int16_t)self->_sprite_offset_fx+j;
+        //    int y=self->_pos_y+(int16_t)self->_sprite_offset_fy+i;
+            //one last boundary check
+            //if (x>=0&&x<ente->screen_width&&y>=0&&y<ente->screen_height){
+                //finally the time has come that we draw some pixels ... hopefully
+
+          //      elite_pixel_game_fputpixelRGBA(ente,x,y,c_tmp);
+            //    elite_pixel_game_fputpixel(ente,x,y,c_tmp);
+            };
+        };
+      char log_str[256]={0};
+      sprintf(log_str,"DEBUG : [sprite_container_sum] sum(_p_current_sprite->bitmap[].r = %ul | .g = %ul | .b = %ul\n",r_sum,g_sum,b_sum);
+      elog(log_str);
+      vTaskDelay(log_delay/portTICK_PERIOD_MS);
+
+
+    if (sprite_container_sum_leaving_log==false) {
+        sprite_container_sum_leaving_log=true;
+        elog("DEBUG : [sprite_container_draw] leaving sprite_container_sum() - once\n");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+    }
+    return true;
+};
+
+
 
 
 bool sprite_container_update(sprite_container_t *self,float fElapsedTime){
@@ -129,21 +214,45 @@ bool sprite_container_draw(sprite_container_t *self,elite_pixel_game_t *ente){
     //trace in
     if (sprite_container_draw_entered_log==false) {
         sprite_container_draw_entered_log=true;
-        elog("DEBUG : [sprite_container_draw] entered sprite_container_draw() - once");
+        elog("DEBUG : [sprite_container_draw] entered sprite_container_draw() - once\n");
         vTaskDelay(log_delay/portTICK_PERIOD_MS);
     }
+    //debug_block
+    if (self==NULL||ente==NULL) {
+        elog("DEBUG : [sprite_container_draw] @param *self==nullptr\n");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+        return false;
+    };
+    if (self->_p_current_sprite==NULL) {
+        elog("DEBUG : [sprite_container_draw] self->_p_current_sprite==nullptr\n");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+        return false;
+    };
+    if (self->_p_current_sprite->load_failed==true) {
+        elog("DEBUG : [sprite_container_draw] self->load_failed==true\n");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+        return false;
+    };
+    if (self->_p_current_sprite->height==0||self->_p_current_sprite->width==0) {
+        elog("DEBUG : [sprite_container_draw] _p_current_sprite->height==0||self->_p_current_sprite->width==0\n");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+        return false;
+    };
+    if (self->_p_current_sprite->_p_bitmap==NULL) {
+        elog("DEBUG : [sprite_container_draw] _p_bitmap==nullptr\b");
+        vTaskDelay(log_delay/portTICK_PERIOD_MS);
+        return false;
+    };
 
-    if (self==NULL||ente==NULL) return false;
-    if (self->_p_current_sprite==NULL) return false;
-    if (self->_p_current_sprite->load_failed==true) return false;
-    if (self->_p_current_sprite->height==0||self->_p_current_sprite->width==0) return false;
-    if (self->_p_current_sprite->p_bitmap==NULL) return false;
+
+
+
     for (size_t i=0;i<self->_p_current_sprite->height;i++) {
         for (size_t j=0;j<self->_p_current_sprite->width;j++) {
             sfRGB c_tmp;
-            c_tmp.fr=self->_p_current_sprite->p_bitmap[i].r;
-            c_tmp.fg=self->_p_current_sprite->p_bitmap[i].g;
-            c_tmp.fb=self->_p_current_sprite->p_bitmap[i].b;
+            c_tmp.fr=self->_p_current_sprite->_p_bitmap[i].r;
+            c_tmp.fg=self->_p_current_sprite->_p_bitmap[i].g;
+            c_tmp.fb=self->_p_current_sprite->_p_bitmap[i].b;
             /*c_tmp.fr=25.0f;
             c_tmp.fg=127.0f;
             c_tmp.fb=25.0f;*/
@@ -220,8 +329,8 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
         return NULL;
     };
 
-    elog("INFO : [sprite_show_construct] copied url_list to self->list_resource_locations");
-//    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    elog("INFO : [sprite_show_construct] copied url_list to self->list_resource_locations\n");
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
     for (int i=0;i<self->num_sprite_containers;i++){
 
@@ -251,17 +360,27 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
         strncpy(sprite_config.url,self->list_resource_locations[ri],strlen(self->list_resource_locations[ri]));
         self->p_sprite_containers[i]._p_current_sprite=elite_sprite_construct(sprite_config);
         if (self->p_sprite_containers[i]._p_current_sprite==NULL) {
-            elog("ERROR : [spriteshow_construct] elite_sprite_construct(sprite_config) failed");
+            elog("ERROR : [spriteshow_construct] elite_sprite_construct(sprite_config) failed\n");
             vTaskDelay(log_delay / portTICK_PERIOD_MS);
         }else{
-            elog("INFO : [spriteshow_construct] elite_sprite_construct(sprite_config) returned elite_sprite_t object");
+            elog("INFO : [spriteshow_construct] elite_sprite_construct(sprite_config) returned elite_sprite_t object\n");
             vTaskDelay(log_delay / portTICK_PERIOD_MS);
-            if (self->p_sprite_containers[i]._p_current_sprite->p_bitmap==NULL) {
-                elog("ERROR : [spriteshow_construct] elite_sprite_construct(sprite_config) self->p_sprite_containers[i]._p_current_sprite->p_bitmap==NULL\n");
-                vTaskDelay(log_delay / portTICK_PERIOD_MS);
+            if (self->p_sprite_containers[i]._p_current_sprite->_p_bitmap==NULL) {
+                elog("ERROR : [spriteshow_construct] elite_sprite_construct() _._p_current_sprite->_p_bitmap==nullptr\n");
+                vTaskDelay(log_delay*2 / portTICK_PERIOD_MS);
             }else{
-                elog("INFO : [spriteshow_construct] elite_sprite_construct(sprite_config) self->p_sprite_containers[i]._p_current_sprite->p_bitmap!=NULL\n");
-                vTaskDelay(log_delay / portTICK_PERIOD_MS);
+                char log_str[128]={0};
+                uint32_t checksum=0l;
+                for (int j=0;j<100;j++) {
+                  checksum+=self->p_sprite_containers[i]._p_current_sprite->_p_bitmap[j].r;
+                  checksum+=self->p_sprite_containers[i]._p_current_sprite->_p_bitmap[j].g;
+                  checksum+=self->p_sprite_containers[i]._p_current_sprite->_p_bitmap[j].b;
+                  };
+                sprintf(log_str,"DEBUG : [elite_sprite_load] checksum=%lu\n",checksum);
+                elog(log_str);
+                vTaskDelay(log_delay/portTICK_PERIOD_MS);
+                elog("INFO : [spriteshow_construct] elite_sprite_construct() _._p_current_sprite->_p_bitmap!=nullptr\n");
+                vTaskDelay(log_delay*2 / portTICK_PERIOD_MS);
             };
         };
     };
@@ -338,12 +457,27 @@ bool spriteshow_on_user_update(void* params,elite_pixel_game_t *ente,float fElap
         };
     };
 */
-//   now the rendering part
+//   now the rendering partä
+    if (sum_flag==true) {
+        elog("DEBUG : [spriteshow_on_user_update] sum_flag set\n");
+        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        for (int i=0;i<self->num_sprite_containers;i++) {
+            if (self->p_sprite_containers[i].container_state!=STATE_ERROR) {
+                sprite_container_sum(&self->p_sprite_containers[i],ente);
+            }else {
+                elog("ERROR : [spriteshow_on_user_update] container_state==STATE_ERROR\n");
+                vTaskDelay(log_delay / portTICK_PERIOD_MS);
+            }
+        };
+        sum_flag=false;
+        elog("DEBUG : [spriteshow_on_user_update] unsetting sum_flag\n");
+        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    };
   for (int i=0;i<self->num_sprite_containers;i++) {
       if (self->p_sprite_containers[i].container_state!=STATE_ERROR) {
           sprite_container_draw(&self->p_sprite_containers[i],ente);
       };
-  }
+  };
 
   //debug tracing out
 
