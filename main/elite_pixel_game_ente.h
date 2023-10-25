@@ -98,16 +98,19 @@ bool elite_sprite_load(elite_sprite_t *self){
   if (self==NULL) return false;
   if (self->load_failed) return false;
   char log_str[256]={0};
-  FILE *f=fopen(self->url,"r");
+  char file_path[128]={0};
+  const char *base_path="/littlefs";
+  sprintf(file_path,"%s/%s",base_path,self->url);
+  FILE *f=fopen(file_path,"r");
   if (f==NULL) {
     //todo : verbose error message : invalid filename, file doesnt exist, readError
-    sprintf(log_str,"ERROR : [elite_sprite_load] could not open <%s> for reading\n",self->url);
+    sprintf(log_str,"ERROR : [elite_sprite_load] could not open <%s> for reading\n",file_path);
     elog(log_str);
     vTaskDelay(log_delay/portTICK_PERIOD_MS);
   return false;
 }else {
   //todo : verbose error message : invalid filename, file doesnt exist, readError
-  sprintf(log_str,"INFO : [elite_sprite_load] opened <%s> for reading\n",self->url);
+  sprintf(log_str,"INFO : [elite_sprite_load] opened <%s> for reading\n",file_path);
   elog(log_str);
   vTaskDelay(log_delay/portTICK_PERIOD_MS);
 
@@ -160,6 +163,7 @@ elite_sprite_t *elite_sprite_construct(elite_sprite_config_t config){
     self->width=config.width;
     self->load_immediatly=config.load_immediatly;
     self->load_failed=false;
+    self->p_bitmap=NULL;
     if (elite_sprite_load(self)) {
       sprintf(log_str,"INFO : [elite_sprite_construct] loaded sprite from file <%s> loaded",self->url);
       elog(log_str);
