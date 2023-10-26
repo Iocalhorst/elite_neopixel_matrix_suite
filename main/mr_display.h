@@ -73,7 +73,7 @@ void mr_display_update_leds(){
         for (int xx=0;xx<width;xx++){
             int ledNumber=yx2led[yy][width-xx-1];//i flipped the xy2led map... oops thats why
             sRGB c=pixels[yy*width+xx];
-            ESP_ERROR_CHECK(led_strip_set_pixel(led_strip, ledNumber, c.r/4,c.g/4,c.b/4));
+            ESP_ERROR_CHECK(led_strip_set_pixel(led_strip, ledNumber, c.r/8,c.g/8,c.b/8));
         };
     };
     ESP_ERROR_CHECK(led_strip_refresh(led_strip));

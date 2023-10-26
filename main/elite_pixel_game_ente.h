@@ -81,12 +81,12 @@ const sRGB dark_blue={
 typedef struct {
   uint16_t width,height;
   bool load_immediatly;
-  char url[ESP_VFS_PATH_MAX];
+  char url[128];
 }elite_sprite_config_t;
 
 typedef struct {
   uint16_t width,height;
-  char url[ESP_VFS_PATH_MAX];
+  char url[128];
   bool load_immediatly;
   bool load_failed;
   sRGB *_p_bitmap;
@@ -98,7 +98,7 @@ bool elite_sprite_load(elite_sprite_t *self){
   if (self==NULL) return false;
   if (self->load_failed) return false;
   char log_str[256]={0};
-  char file_path[128]={0};
+  char file_path[138]={0};
   const char *base_path="/littlefs";
   sprintf(file_path,"%s/%s",base_path,self->url);
   FILE *f=fopen(file_path,"r");
@@ -164,9 +164,9 @@ bool elite_sprite_load(elite_sprite_t *self){
 
 
 
-  vTaskDelay(log_delay/portTICK_PERIOD_MS);
-  elog("DEBUG : [elite_sprite_load] leaving elite_sprite_load, true\n");
 
+  elog("DEBUG : [elite_sprite_load] leaving elite_sprite_load, true\n");
+  vTaskDelay(log_delay/portTICK_PERIOD_MS);
   return true;
 
 };

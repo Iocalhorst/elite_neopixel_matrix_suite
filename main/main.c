@@ -185,8 +185,9 @@ void main_simple_ota_task(void *pvParameter)
     if (ret == ESP_OK) {
         ESP_LOGI(TAG, "OTA Succeed, Rebooting...");
         elog("INFO : [main_simple_ota_task] OTA Firmware updated succeeded, rebooting...\n");
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
-        esp_restart();
+        main_reboot();
+        //vTaskDelay(5000 / portTICK_PERIOD_MS);
+        //esp_restart();
     } else {
         ESP_LOGE(TAG, "Firmware upgrade failed");
         elog("ERROR : [main_simple_ota_task] Firmware upgrade failed\n");
@@ -197,7 +198,7 @@ while(ota_timer>0){
     ota_timer-=1000;
   };
   elog("INFO : [main_simple_ota_task] stopping main_simple_ota_task \n");
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
 ota_has_stopped=true;
 vTaskDelete(NULL);
 
@@ -232,7 +233,7 @@ void main_start_ota_task(){
   elog("INFO : [main_start_ota_task] creating &simple_ota task\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
   xTaskCreate(&main_simple_ota_task, "main_simple_ota_task", 8192, NULL, 5, NULL);
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
   elog("INFO : [main_start_ota_task] leaving main_start_ota_task\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
@@ -262,21 +263,6 @@ void main_start_eyes_tasks(){
 void main_reboot(){
 
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  ESP_LOGI(TAG, "rebooting in 10\n");
-  elog("INFO : [main] rebooting in 10\n");
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
-  elog("INFO : [main] rebooting in 9\n");
-  ESP_LOGI(TAG, "9");
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
-  elog("INFO : [main] rebooting in 8\n");
-  ESP_LOGI(TAG, "8");
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
-  elog("INFO : [main] rebooting in 7\n");
-  ESP_LOGI(TAG, "7");
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
-  elog("INFO : [main] rebooting in 6\n");
-  ESP_LOGI(TAG, "6");
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
   elog("INFO : [main] rebooting in 5\n");
   ESP_LOGI(TAG, "5");
   vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -315,8 +301,8 @@ void app_main(void){
 
 
     ESP_ERROR_CHECK(err);
-    ESP_LOGI(TAG, "Waiting 3 seconds for reasons");
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
+    //ESP_LOGI(TAG, "Waiting 3 seconds for reasons");
+    //vTaskDelay(3000 / portTICK_PERIOD_MS);
 
     led_strip = configure_led_spi();
 
@@ -328,16 +314,16 @@ void app_main(void){
 
 
     xTaskCreate(elite_logger_task, "elite_logger_task", 4096, &elite_logger_task_params, 5, &p_elite_logger_task_handle);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
     elog("\n------------hello again-------------\n");
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
     elog("INFO : Hier koennte ihre werbung stehen\n");
     main_start_ota_task();
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
     main_start_eyes_tasks();
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
     xTaskCreate(tcp_server_task, "tcp_server", 4096*2, (void*)AF_INET, 5, NULL);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
 
     if (!elite_init_littlefs()){
@@ -357,7 +343,7 @@ void app_main(void){
               main_clear_display();
               main_draw_background();
               main_draw_monsters();
-              vTaskDelay(10 / portTICK_PERIOD_MS);
+              vTaskDelay(20 / portTICK_PERIOD_MS);
               mr_display_update_leds();
         };
     };

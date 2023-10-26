@@ -33,7 +33,7 @@
 
 
 
-static const int log_delay=250;
+static const int log_delay=25;
 esp_vfs_littlefs_conf_t conf = {
     .base_path = "/littlefs",
     .partition_label = "littlefs",
@@ -204,7 +204,7 @@ static void elite_logger_task(void* args){
 
 
       elog("INFO : [main] Shutting down log_socket\n");
-          vTaskDelay(500 / portTICK_PERIOD_MS);
+          vTaskDelay(log_delay / portTICK_PERIOD_MS);
       ESP_LOGE(TAG, "Shutting down log_socket\n");
       shutdown(sock, 0);
       close(sock);
