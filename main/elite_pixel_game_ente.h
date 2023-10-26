@@ -32,49 +32,49 @@ typedef struct {
 void elite_display_update(sRGB *p_frame_buf);
 
 const sRGB pink={
-  .r=68,
-  .g=32,
-  .b=28
+  .r=68*2,
+  .g=32*2,
+  .b=28*2
 };
 const sRGB dark_green={
-  .r=2,
-  .g=8,
-  .b=2
+  .r=2*2,
+  .g=8*2,
+  .b=2*2
 };
 const sRGB dark_pink={
-  .r=24,
-  .g=10,
-  .b=8
+  .r=24*2,
+  .g=10*2,
+  .b=8*2
 };
 const sRGB white={
-  .r=64,
-  .g=60,
-  .b=56
+  .r=64*2,
+  .g=60*2,
+  .b=56*2
 };
 const sRGB black={
-  .r=0,
-  .g=0,
-  .b=0
+  .r=0*2,
+  .g=0*2,
+  .b=0*2
 };
 const sRGB yellow={
-  .r=64,
-  .g=60,
-  .b=4
+  .r=64*2,
+  .g=60*2,
+  .b=4*2
 };
 const sRGB dark_yellow={
-  .r=24,
-  .g=22,
-  .b=2
+  .r=24*2,
+  .g=22*2,
+  .b=2*2
 };
 const sRGB blue={
-  .r=22,
-  .g=18,
-  .b=56
+  .r=22*2,
+  .g=18*2,
+  .b=56*2
 };
 const sRGB dark_blue={
-  .r=4,
-  .g=6,
-  .b=16
+  .r=4*2,
+  .g=6*2,
+  .b=16*2
 };
 
 

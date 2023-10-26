@@ -15,12 +15,13 @@
 #define STATE_HOLD 2
 #define STATE_FETCH_NEXT 3
 #define STATE_FADE_OUT 4
-#define STATE_SWAP_SPRITE 5
+#define STATE_SWAP 5
 
 
 typedef struct{
   int container_state;
   int _current_resource_index;
+  int _next_resource_index;
   elite_sprite_t *_p_current_sprite;
   elite_sprite_t *_p_next_sprite;
   int _pos_x;
@@ -133,8 +134,6 @@ bool sprite_container_sum(sprite_container_t *self,elite_pixel_game_t *ente){
 };
 
 
-
-
 bool sprite_container_update(sprite_container_t *self,float fElapsedTime){
     switch (self->container_state) {
         case STATE_INITIAL_HOLD : {
@@ -152,13 +151,14 @@ bool sprite_container_update(sprite_container_t *self,float fElapsedTime){
         case STATE_FADE_IN : {
             self->state_timer-=fElapsedTime;
             self->_falpha_modulator=(self->fade_in_time-self->state_timer)/self->fade_in_time;
+
             if (self->state_timer<=0.0f) {
-                self->_falpha_modulator=1.0f;
+              //  self->_falpha_modulator=1.0f;
                 self->state_timer=self->hold_time;
                 self->container_state=STATE_HOLD;
+                self->has_been_reloaded=false;
                 elog("DEBUG : [spriteshow_container_update] FADE_IN->HOLD\n");
                 vTaskDelay(log_delay/portTICK_PERIOD_MS);
-                self->has_been_reloaded=false;
                 elog("DEBUG : [spriteshow_container_update] has_been_reloaded=false\n");
                 vTaskDelay(log_delay/portTICK_PERIOD_MS);
 
@@ -192,20 +192,32 @@ bool sprite_container_update(sprite_container_t *self,float fElapsedTime){
             self->state_timer-=fElapsedTime;
             self->_falpha_modulator=1.0f-((self->fade_in_time-self->state_timer)/self->fade_in_time);
             if (self->state_timer<=0.0f) {
-                self->_falpha_modulator=0.0f;//clamping needed cause coefficient might turn out to be negativ
+              //  self->_falpha_modulator=0.0f;//clamping needed cause coefficient might turn out to be negativ
                 self->state_timer=self->fade_in_time;
-                self->container_state=STATE_FADE_IN;
-                elog("DEBUG : [spriteshow_container_update] FADE_OUT->FADE_IN\n");
+                self->container_state=STATE_SWAP;
+                elog("DEBUG : [spriteshow_container_update] FADE_OUT->SWAP\n");
                 vTaskDelay(log_delay/portTICK_PERIOD_MS);
-                if (self->_p_next_sprite!=NULL&&self->_p_next_sprite->load_failed==false) {
-                    elog("DEBUG : [spriteshow_container_update] memcpy(self->_p_current_sprite,self->_p_next_sprite,sizeof(elite_sprite_t);\n");
-                    vTaskDelay(log_delay/portTICK_PERIOD_MS);
-                    memcpy(self->_p_current_sprite,self->_p_next_sprite,sizeof(elite_sprite_t));
-                };
+
 
             };
             break;
         };
+        case STATE_SWAP : {
+                  //  self->_falpha_modulator=0.0f;//clamping needed cause coefficient might turn out to be negativ
+
+                vTaskDelay(log_delay/portTICK_PERIOD_MS);
+                if (self->_p_next_sprite!=NULL&&self->_p_next_sprite->load_failed==false) {
+                    //elog("DEBUG : [spriteshow_container_update] memcpy(self->_p_current_sprite,self->_p_next_sprite,sizeof(elite_sprite_t);\n");
+                    elog("DEBUG : [spriteshow_container_update] SWAP!\n");
+                    vTaskDelay(log_delay/portTICK_PERIOD_MS);
+                    memcpy(self->_p_current_sprite->_p_bitmap,self->_p_next_sprite->_p_bitmap,sizeof(sRGB)*100);
+                };
+                self->container_state=STATE_FADE_IN;
+                self->_next_resource_index+=3;
+                elog("DEBUG : [spriteshow_container_update] FADE_OUT->FADE_IN\n");
+            break;
+        };
+
 
         case STATE_ERROR : {
             break;
@@ -270,12 +282,12 @@ bool sprite_container_draw(sprite_container_t *self,elite_pixel_game_t *ente){
             sRGB pixel=self->_p_current_sprite->_p_bitmap[i*10+j];
             if (pixel.r+pixel.g+pixel.b==0) continue;
             sfRGBA c_tmp;
-            c_tmp.fr=pixel.r*self->_falpha_modulator;
-            c_tmp.fg=pixel.g*self->_falpha_modulator;
-            c_tmp.fb=pixel.b*self->_falpha_modulator;
+            c_tmp.fr=pixel.r;
+            c_tmp.fg=pixel.g;
+            c_tmp.fb=pixel.b;
 
             //c_tmp.fa=255.0f;
-            c_tmp.fa=255.0f;//*self->_falpha_modulator;
+            c_tmp.fa=255.0f*self->_falpha_modulator;//*self->_falpha_modulator;
             //TODO : update _sprite_offset_fx,_sprite_offset_fx on some lovely sunny day
             int x=self->_pos_x+(int16_t)self->_sprite_offset_fx+j;
             int y=self->_pos_y+(int16_t)self->_sprite_offset_fy+i;
@@ -353,12 +365,13 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
     for (int i=0;i<self->num_sprite_containers;i++){
 
         self->p_sprite_containers[i].container_state=STATE_INITIAL_HOLD;
-        self->p_sprite_containers[i].initial_hold_time=0.66f*i;
-        self->p_sprite_containers[i].fade_in_time=1.5f;
-        self->p_sprite_containers[i].hold_time=10.0f;
-        self->p_sprite_containers[i].fade_out_time=1.5f;
+        self->p_sprite_containers[i].initial_hold_time=10.0f*i;
+        self->p_sprite_containers[i].fade_in_time=3.5f;
+        self->p_sprite_containers[i].hold_time=20.0f;
+        self->p_sprite_containers[i].fade_out_time=3.5f;
         self->p_sprite_containers[i].has_been_reloaded=true;//false;//we'll come back to that right next
         self->p_sprite_containers[i]._current_resource_index=i;
+        self->p_sprite_containers[i]._next_resource_index=i+3;
         self->p_sprite_containers[i]._pos_x=0;
         self->p_sprite_containers[i]._pos_y=10*i;
         self->p_sprite_containers[i]._falpha_modulator=0.0f;
@@ -377,6 +390,8 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
         int ri=self->p_sprite_containers[i]._current_resource_index;
         strncpy(sprite_config.url,self->list_resource_locations[ri],strlen(self->list_resource_locations[ri]));
         self->p_sprite_containers[i]._p_current_sprite=elite_sprite_construct(sprite_config);
+      //  self->p_sprite_containers[i]._p_next_sprite=elite_sprite_construct(sprite_config);
+
         if (self->p_sprite_containers[i]._p_current_sprite==NULL) {
             elog("ERROR : [spriteshow_construct] elite_sprite_construct(sprite_config) failed\n");
             vTaskDelay(log_delay / portTICK_PERIOD_MS);
@@ -409,7 +424,7 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
             .load_immediatly=true,
             .url={0}
         };
-        int ri2=(self->p_sprite_containers[i]._current_resource_index+10)%self->num_resources;
+        int ri2=(self->p_sprite_containers[i]._current_resource_index)%self->num_resources;
         strncpy(next_sprite_config.url,self->list_resource_locations[ri2],strlen(self->list_resource_locations[ri2]));
         self->p_sprite_containers[i]._p_next_sprite=elite_sprite_construct(next_sprite_config);
         if (self->p_sprite_containers[i]._p_next_sprite==NULL) {
@@ -471,36 +486,26 @@ bool spriteshow_on_user_update(void* params,elite_pixel_game_t *ente,float fElap
         sprite_container_update(&self->p_sprite_containers[i],fElapsedTime);
     };
 
-    bool all_containers_on_hold=true;
+    //bool all_containers_on_hold=true;
 
     for (int i=0;i<self->num_sprite_containers;i++) {
-        if (self->p_sprite_containers[i].container_state!=STATE_HOLD) {
-            all_containers_on_hold=false;
-            break;
-        };
-    };
+        if (self->p_sprite_containers[i].container_state==STATE_HOLD&&self->p_sprite_containers[i].has_been_reloaded==false) {
 
-    if (all_containers_on_hold==true) {
+            self->p_sprite_containers[i]._next_resource_index+=3;
 
-
-        for (size_t i=0;i<self->num_sprite_containers;i++) {
-            //break_return if we've updated this guys sprite bitmap data already
-            if (self->p_sprite_containers[i].has_been_reloaded==true) break;
             elog("DEBUG: [spriteshow_on_user_update] loading new _p_next_sprite into container\n");
             vTaskDelay(log_delay / portTICK_PERIOD_MS);
             //advance the url_list index
-            elog("DEBUG : [spriteshow_on_user_update] curent_resource_index++\n");
+            elog("DEBUG : [spriteshow_on_user_update] current_resource_index++\n");
             vTaskDelay(log_delay / portTICK_PERIOD_MS);
-            self->p_sprite_containers[i]._current_resource_index+=1;
             //wrap it
-            self->p_sprite_containers[i]._current_resource_index%=self->num_resources;
             //clear the old sprite url char buffer
             elog("DEBUG : [spriteshow_on_user_update] clearing old url\n");
             vTaskDelay(log_delay / portTICK_PERIOD_MS);
             //for (int i=0;i<128;i++){self->p_sprite_containers[i]._p_next_sprite->url[i]='\0';}
 
             //readability
-            int ri=self->p_sprite_containers[i]._current_resource_index;
+            int ri=self->p_sprite_containers[i]._next_resource_index;
             int len=strlen(self->list_resource_locations[ri]);
             //copy the new path_str into the sprite struct url buffer;
             elog("DEBUG : [spriteshow_on_user_update] strncopy(new_url)\n");
@@ -514,11 +519,14 @@ bool spriteshow_on_user_update(void* params,elite_pixel_game_t *ente,float fElap
                 //yay :-)
                 elog("INFO : [spriteshow_on_user_update] elite_sprite_load(p_next_sprite) succeeded\n");
                 vTaskDelay(log_delay / portTICK_PERIOD_MS);
+                self->p_sprite_containers[i]._current_resource_index=self->p_sprite_containers[i]._next_resource_index;
+
             }else{
                 //we messed up :-(
                 self->p_sprite_containers[i].container_state=STATE_ERROR;
                 elog("ERROR : [spriteshow_on_user_update] elite_sprite_load(p_next_sprite) failed\n");
                 vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
             };
             self->p_sprite_containers[i].has_been_reloaded=true;
         };
