@@ -1,4 +1,5 @@
 //header only elite_pixel_game_ente bare minimum template example application
+//display shows screen filled with dark_green on invocation 
 #include "elite_pixel_game_ente.h"
 #include "elite.h"
 #include "main.h"

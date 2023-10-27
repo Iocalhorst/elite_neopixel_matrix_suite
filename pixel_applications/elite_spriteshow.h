@@ -366,10 +366,10 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
     for (int i=0;i<self->num_sprite_containers;i++){
 
         self->p_sprite_containers[i].container_state=STATE_INITIAL_HOLD;
-        self->p_sprite_containers[i].initial_hold_time=0.5f*((float)i+1.0f);
-        self->p_sprite_containers[i].fade_in_time=1.15f;
-        self->p_sprite_containers[i].hold_time=8.0f;
-        self->p_sprite_containers[i].fade_out_time=0.85f;
+        self->p_sprite_containers[i].initial_hold_time=0.60f*((float)i+1.0f);
+        self->p_sprite_containers[i].fade_in_time=0.95f;
+        self->p_sprite_containers[i].hold_time=15.0f;
+        self->p_sprite_containers[i].fade_out_time=0.75f;
         self->p_sprite_containers[i].has_been_reloaded=true;//false;//we'll come back to that right next
         self->p_sprite_containers[i]._current_resource_index=i;
         self->p_sprite_containers[i]._next_resource_index=i+3;
