@@ -14,7 +14,7 @@ typedef struct{
   float fy;
   float fvx;
   float fvy;
-  sfRGB col;
+  sfRGBA col;
 }particle_t;
 
 
@@ -43,7 +43,7 @@ typedef struct{
     //sfRGB c={10.0f+fvy,5.0f+fvy*0.5f,15.0f+fvy*1.5f};
 
     //sfRGB c={10.0f+1.0f*fvy+frandr,5.0f+fvy*0.5f,15.0f+fvy+frandb};
-    sfRGB c={5.0f+0.5f*fvy+frandr,5.0f+fvy*0.25f,10.0f+fvy+frandb};
+    sfRGBA c={5.0f+0.5f*fvy+frandr,5.0f+fvy*0.25f,10.0f+fvy+frandb,255.0f};
     self->particles[i].col=c;
   };
   return self;
@@ -61,7 +61,7 @@ bool particle_shower_update(particle_shower_t *self, float fElapsedTime){
 
       self->particles[i].fvy=fvy;
       //sfRGB c={10.0f+1.5f*fvy,5.0f+fvy*0.25f,15.0f+fvy*2.0f};
-          sfRGB c={5.0f+0.5f*fvy+frandr,5.0f+fvy*0.25f,10.0f+fvy+frandb};
+          sfRGBA c={5.0f+0.5f*fvy+frandr,5.0f+fvy*0.25f,10.0f+fvy+frandb,255.0f};
       self->particles[i].col=c;
       self->particles[i].fy-=30.0f;
     };
@@ -74,7 +74,7 @@ bool particle_shower_draw(elite_pixel_game_t* ente,particle_shower_t *self){
     //elite_pixel_game_fputpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGB col)
     int16_t x=(int16_t)self->particles[i].fx;
     int16_t y=(int16_t)self->particles[i].fy;
-    if (y>=0&&y<30&&x>=0&&x<10) {elite_pixel_game_fputpixel(ente,x,y,self->particles[i].col);};
+    if (y>=0&&y<30&&x>=0&&x<10) {elite_pixel_game_fputpixelRGBA(ente,x,y,self->particles[i].col);};
   };
   return true;
 };

@@ -55,8 +55,8 @@ bool rain_on_user_update(void* params,elite_pixel_game_t *ente,float fElapsedTim
 
 
   elite_pixel_game_set_target_layer(ente,0);
-  sfRGB c={0.0f,0.0f,0.0f};
-  elite_pixel_game_fill_flayer(ente,c);
+  sfRGBA c={0.0f,0.0f,0.0f,255.0f};
+  elite_pixel_game_fill_flayerRGBA(ente,c);
 
     if (on_user_update_pre_particle_shower_update_log==false) {
       on_user_update_pre_particle_shower_update_log=true;

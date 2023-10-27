@@ -61,8 +61,8 @@ bool template_pixel_app_on_user_update(void* params,elite_pixel_game_t *ente,flo
   template_pixel_app_t *self=(template_pixel_app_t*)params;
   (void)self;
   elite_pixel_game_set_target_layer(ente,0);
-  sfRGB c={0.0f,64.0f,0.0f};
-  elite_pixel_game_fill_flayer(ente,c);
+  sfRGBA c={0.0f,64.0f,0.0f,255.0f};
+  elite_pixel_game_fill_flayerRGBA(ente,c);
 
 
 //debug tracing out

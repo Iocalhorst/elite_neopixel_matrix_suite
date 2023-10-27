@@ -1,4 +1,5 @@
 //abstraction layer between the framebuffer provider and the led driver library
+//TODO : implement gamma correction brightness control, color correction
 #include "elite.h"
 #include "elite_pixel_game_ente.h"
 
@@ -73,7 +74,7 @@ void mr_display_update_leds(){
         for (int xx=0;xx<width;xx++){
             int ledNumber=yx2led[yy][width-xx-1];//i flipped the xy2led map... oops thats why
             sRGB c=pixels[yy*width+xx];
-            ESP_ERROR_CHECK(led_strip_set_pixel(led_strip, ledNumber, c.r/16,c.g/16,c.b/16));
+            ESP_ERROR_CHECK(led_strip_set_pixel(led_strip, ledNumber, c.r/4,c.g/4,c.b/4));
         };
     };
     ESP_ERROR_CHECK(led_strip_refresh(led_strip));

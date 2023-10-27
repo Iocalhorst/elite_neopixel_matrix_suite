@@ -243,6 +243,10 @@ typedef struct{
 }layer_fRGB;
 
 
+typedef struct{
+    sfRGBA *pixels;
+}layer_fRGBA;
+
 struct s_elite_pixel_game {
     bool init_ok;
     bool user_construct_done;
@@ -251,7 +255,7 @@ struct s_elite_pixel_game {
     uint16_t screen_width,screen_height;//actual "usable" witdh/height since referencing the config is verbooten
     sRGB *p_frame_buf;
     size_t p_frame_buf_size;
-    layer_fRGB *p_layer[4];
+    layer_fRGBA *p_layer[4];
     int target_layer;
     int num_layers;
     void *user;
@@ -275,11 +279,12 @@ struct s_elite_pixel_game {
 elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config);
 bool elite_pixel_game_set_target_layer(elite_pixel_game_t *self,int tl);
 bool elite_pixel_game_render_to_framebuf(elite_pixel_game_t *self);
-bool elite_pixel_game_fill_layer(elite_pixel_game_t *self,sRGB fill_col);
-bool elite_pixel_game_fill_flayer(elite_pixel_game_t *self,sfRGB fill_fcol);
-bool elite_pixel_game_putpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sRGB col);
-bool elite_pixel_game_fputpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGB col);
+//bool elite_pixel_game_fill_layer(elite_pixel_game_t *self,sRGB fill_col);
+bool elite_pixel_game_fill_flayerRGBA(elite_pixel_game_t *self,sfRGBA fill_fcol);
+//bool elite_pixel_game_putpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sRGB col);
+//bool elite_pixel_game_fputpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGB col);
 bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGBA col);
+//bool elite_pixel_game_fputPixelRGBA_(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGBA col);
 bool elite_pixel_game_destruct(elite_pixel_game_t *self);
 
 //function definitions
@@ -327,7 +332,7 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
 
   elog("INFO : [elite_pixel_game_construct] allocating p_layer[0]\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  self->p_layer[0]=(layer_fRGB*)malloc(sizeof(layer_fRGB));
+  self->p_layer[0]=(layer_fRGBA*)malloc(sizeof(layer_fRGBA));
   if (self->p_layer[0]!=NULL) {
     elog("INFO : [elite_pixel_game_construct] p_layer[0] allocated\n");
     self->target_layer=0;
@@ -337,7 +342,7 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
 };
 
-    self->p_layer[0]->pixels=(sfRGB*)malloc(self->config.screen_width*self->config.screen_height*sizeof(sfRGB));
+    self->p_layer[0]->pixels=(sfRGBA*)malloc(self->config.screen_width*self->config.screen_height*sizeof(sfRGBA));
     if (self->p_layer[0]->pixels!=NULL) {
       elog("INFO : [elite_pixel_game_construct] p_layer[0].pixels allocated\n");
       self->num_layers=1;
@@ -527,14 +532,9 @@ bool elite_pixel_game_set_target_layer(elite_pixel_game_t *self,int tl){
 }
 
 
-bool elite_pixel_game_fputpixel_entered_log=false;
-bool elite_pixel_game_fputpixel_leaving_log=false;
-bool elite_pixel_game_fputpixel_dont_hurt_the__canvas_log=false;
-
-static uint32_t canvas_hurt_count=0;
 
 
-bool elite_pixel_game_fputpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGB col){
+/*bool elite_pixel_game_fputpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGB col){
 //tracing pre
     if (elite_pixel_game_fputpixel_entered_log==false) {
         elite_pixel_game_fputpixel_entered_log=true;
@@ -606,7 +606,7 @@ bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t* self,int16_t x,int16_t y
         };
     return false;
     };
-
+fput
 //tracing post
     if (elite_pixel_game_fputpixelRGBA_leaving_log==false) {
         elite_pixel_game_fputpixelRGBA_leaving_log=true;
@@ -617,7 +617,89 @@ bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t* self,int16_t x,int16_t y
     return true;
 };
 
-bool elite_pixel_game_putpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sRGB col){
+
+*/
+
+bool elite_pixel_game_fputpixelRGBA_entered_log=false;
+bool elite_pixel_game_fputpixelRGBA_leaving_log=false;
+bool elite_pixel_game_fputpixelRGBA_dont_hurt_the_canvas_log=false;
+
+static uint32_t canvas_hurt_count=0;
+
+
+bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t *self,int16_t x,int16_t y,sfRGBA fSrcColor) {
+  //tracing pre
+      if (elite_pixel_game_fputpixelRGBA_entered_log==false) {
+          elite_pixel_game_fputpixelRGBA_entered_log=true;
+          elog("INFO : [elite_pixel_game_fputpixel] entered elite_pixel_game_fputpixel() - this notification will only occur once\n");
+          vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        };
+
+    if ((x<0)||(y<0)||(x>=self->screen_width)||(y>=self->screen_height)) {  //dont hurt the canvas
+          canvas_hurt_count+=1;
+          if (elite_pixel_game_fputpixelRGBA_dont_hurt_the_canvas_log==false) {
+              elite_pixel_game_fputpixelRGBA_dont_hurt_the_canvas_log=true;
+              elog("ERROR : [elite_pixel_game_fputpixelRGBA] You've hurt the canvas. You're not supposed to hurt the canvas! - this notification will only occur once\n");
+              char hurt_str2[256]={0};
+              sprintf(hurt_str2,"details : \n config.screen_width=%i\n config.screen_height=%i\n x=%i y=%i\n",self->config.screen_width,self->config.screen_height,x,y);
+              elog(hurt_str2);
+              vTaskDelay(log_delay / portTICK_PERIOD_MS);
+          };
+      return false;
+    }; //cause you're not supposed to hurt the canvas
+
+    uint16_t pixelIndex=x+(y*(self->screen_width));
+  //apply alpha blending
+    sfRGBA  cB=self->p_layer[self->target_layer]->pixels[pixelIndex];
+  //cB.clamp(0.0f,255.0f);
+    cB.fa/=255.0f;
+    cB.fr/=255.0f;
+    cB.fg/=255.0f;
+    cB.fb/=255.0f;
+
+    sfRGBA cA=fSrcColor;
+  //cA.clamp(0.0f,255.0f);
+    cA.fa/=255.0f;
+    cA.fr/=255.0f;
+    cA.fg/=255.0f;
+    cA.fb/=255.0f;
+    sfRGBA cC;
+  //if ((cA.fa!=0.0f)&&(cB.fa!=0.0f)) {
+    cC.fa=cA.fa+((1.0f-cA.fa)*cB.fa);
+  //catch divByZero cases
+    if (cC.fa!=0.0f) {
+        cC.fr=((1.0f/cC.fa)*(cA.fa*cA.fr+((1-cA.fa)*(cB.fa*cB.fr))));
+        cC.fg=((1.0f/cC.fa)*(cA.fa*cA.fg+((1-cA.fa)*(cB.fa*cB.fg))));
+        cC.fb=((1.0f/cC.fa)*(cA.fa*cA.fb+((1-cA.fa)*(cB.fa*cB.fb))));
+    }else {
+        if (cA.fa==0.0f) {
+            cC=cB;
+        }else {
+            if (cB.fa==0.0f) {
+                cC=cA;
+            };
+        };
+    };
+    cC.fa*=255.0f;
+    cC.fr*=255.0f;
+    cC.fg*=255.0f;
+    cC.fb*=255.0f;
+    //cC.clamp(0.0f,255.0f);
+    //if (self->target_layer==FX_LAYER) cC.fa*=0.175f;
+    self->p_layer[self->target_layer]->pixels[pixelIndex]=cC;
+
+
+    //tracing post
+    if (elite_pixel_game_fputpixelRGBA_leaving_log==false) {
+        elite_pixel_game_fputpixelRGBA_leaving_log=true;
+        elog("INFO : [elite_pixel_game_fputpixelRGBA] leaving elite_pixel_game_fputpixelRGBA() - this notification will only occur once\n");
+        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    };
+
+    return true;
+};
+
+/*bool elite_pixel_game_putpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sRGB col){
     sfRGB fcol;
     fcol.fr=(float)col.r;
     fcol.fg=(float)col.g;
@@ -625,11 +707,11 @@ bool elite_pixel_game_putpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sRGB
     elite_pixel_game_fputpixel(self,x,y,fcol);
     return true;
 };
+*/
+//bool elite_pixel_game_fill_layer_entered_log=false;
+//bool elite_pixel_game_fill_layer_leaving_log=false;
 
-bool elite_pixel_game_fill_layer_entered_log=false;
-bool elite_pixel_game_fill_layer_leaving_log=false;
-
-bool elite_pixel_game_fill_layer(elite_pixel_game_t *self,sRGB fill_col){
+/*bool elite_pixel_game_fill_layer(elite_pixel_game_t *self,sRGBA fill_col){
 
 //tracing pre
 if (elite_pixel_game_fill_layer_entered_log==false) {
@@ -641,29 +723,29 @@ if (elite_pixel_game_fill_layer_entered_log==false) {
 //body
   for (int y=0;y<self->config.screen_height;y++){
     for (int x=0;x<self->config.screen_width;x++){
-          elite_pixel_game_putpixel(self,x,y,fill_col);
+          elite_pixel_game_putpixelRGBA(self,x,y,fill_col);
     };
   };
 
 //tracing post
-if (elite_pixel_game_fill_layer_leaving_log==false) {
-      elite_pixel_game_fill_layer_leaving_log=true;
-      elog("INFO : [elite_pixel_game_fill_layer] leaving elite_pixel_game_fill_flayer - this notification will only occur once\n");
+if (elite_pixel_game_fill_flayerRGBA_leaving_log==false) {
+      elite_pixel_game_fill_flayerRGBA_leaving_log=true;
+      elog("INFO : [elite_pixel_game_fill_layerRGBA] leaving elite_pixel_game_fill_flayerRGBA - this notification will only occur once\n");
       vTaskDelay(log_delay / portTICK_PERIOD_MS);
     };
 
   return true;
 }
+*/
 
+bool elite_pixel_game_fill_flayerRGBA_entered_log=false;
+bool elite_pixel_game_fill_flayerRGBA_leaving_log=false;
 
-bool elite_pixel_game_fill_flayer_entered_log=false;
-bool elite_pixel_game_fill_flayer_leaving_log=false;
-
-bool elite_pixel_game_fill_flayer(elite_pixel_game_t *self,sfRGB fill_fcol){
+bool elite_pixel_game_fill_flayerRGBA(elite_pixel_game_t *self,sfRGBA fill_fcol){
 
 //tracing pre
-if (elite_pixel_game_fill_flayer_entered_log==false) {
-    elite_pixel_game_fill_flayer_entered_log=true;
+if (elite_pixel_game_fill_flayerRGBA_entered_log==false) {
+    elite_pixel_game_fill_flayerRGBA_entered_log=true;
     elog("INFO : [elite_pixel_game_fill_flayer] entered elite_pixel_game_fill_flayer - this notification will only occur once\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
   };
@@ -672,13 +754,13 @@ if (elite_pixel_game_fill_flayer_entered_log==false) {
 //body
   for (int y=0;y<self->config.screen_height;y++){
     for (int x=0;x<self->config.screen_width;x++){
-          elite_pixel_game_fputpixel(self,x,y,fill_fcol);
+          elite_pixel_game_fputpixelRGBA(self,x,y,fill_fcol);
     };
   };
 //tracing post
-if (elite_pixel_game_fill_flayer_leaving_log==false) {
-      elite_pixel_game_fill_flayer_leaving_log=true;
-      elog("INFO : [elite_pixel_game_fill_flayer] leaving elite_pixel_game_fill_flayer - this notification will only occur once\n");
+if (elite_pixel_game_fill_flayerRGBA_leaving_log==false) {
+      elite_pixel_game_fill_flayerRGBA_leaving_log=true;
+      elog("INFO : [elite_pixel_game_fill_flayerRGBA] leaving elite_pixel_game_fill_flayerRGBA - this notification will only occur once\n");
       vTaskDelay(log_delay / portTICK_PERIOD_MS);
     };
 
@@ -713,9 +795,9 @@ bool elite_pixel_game_update(elite_pixel_game_t *self,float fElapsedTime){
 //  memset(self->p_frame_buf,0,self->p_frame_buf_size);
 
 //test of direct access to the p_frame_buf - dont do it like that - use the api
-//for (int i=0;i<300;i++) {sRGB c={32,32,32};self->p_frame_buf[i]=c;};
+for (int i=0;i<300;i++) {sRGB c={0,0,0};self->p_frame_buf[i]=c;};
 
-
+for (int i=0;i<300;i++) {sfRGBA c={0.0f,0.0f,0.0f,255.0f};self->p_layer[0]->pixels[i]=c;};
 //test of directly accessing the layer[0]->pixels - dont do it like that - use the api
 //just a little color wash
 /*
@@ -767,17 +849,17 @@ return result;
 
 bool elite_pixel_game_render_to_framebuf(elite_pixel_game_t *self){
   if (self->init_ok!=true) return false;
+  size_t pixel_index=0;
   for (size_t y=0;y<self->config.screen_height;y++){
       for (size_t x=0;x<self->config.screen_width;x++){
-          size_t pixel_index=0;
-          pixel_index=self->config.screen_width*y+x;
           sRGB pixel_color={0};
-          sfRGB fpixel_color={0};
+          sfRGBA fpixel_color={0};
           fpixel_color=self->p_layer[0]->pixels[pixel_index];
           pixel_color.r=(uint8_t)fpixel_color.fr;
           pixel_color.g=(uint8_t)fpixel_color.fg;
           pixel_color.b=(uint8_t)fpixel_color.fb;
           self->p_frame_buf[pixel_index]=pixel_color;
+          pixel_index+=1;
       };
     };
     return true;
@@ -813,7 +895,7 @@ void elite_pixel_game_task(void* params){
 //    vTaskDelay(500 / portTICK_PERIOD_MS);
 //  };
 
-  vTaskDelay(500 / portTICK_PERIOD_MS);
+  vTaskDelay(log_delay / portTICK_PERIOD_MS);
   elog("INFO : [elite_pixel_game_task] started\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
   //int32_t pixelapp_runtime_limit_ms=60000;
