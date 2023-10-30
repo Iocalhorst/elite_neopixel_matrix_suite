@@ -1,5 +1,5 @@
 //header only elite_pixel_game_ente bare minimum template example application
-//display shows screen filled with dark_green on invocation 
+//display shows screen filled with dark_green on invocation
 #include "elite_pixel_game_ente.h"
 #include "elite.h"
 #include "main.h"
@@ -105,9 +105,9 @@ bool template_pixel_app_on_user_destroy(void* params){
 
 void template_pixel_app_start_task(){
 
-    elog("INFO : [main_start_pixel_game_task] entered main_start_pixelapp_task\n");
+    elog("INFO : [template_pixel_app_start_pixel_game_task] entered template_pixel_app_start_pixelapp_task\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
-    elog("INFO : [main_start_pixel_game_task] creating &pixel_game_task\n");
+    elog("INFO : [template_pixel_app_start_pixel_game_task] creating &pixel_game_task\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
     elite_pixel_game_config_t pixel_game_config={
         .app_name="template_pixel_app",
@@ -118,7 +118,7 @@ void template_pixel_app_start_task(){
         .on_user_destroy=&template_pixel_app_on_user_destroy
     };
     xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 4096,&pixel_game_config, 5, NULL);
-    elog("INFO : [main_start_pixelapp_task] leaving main_start_pixelapp_task\n");
+    elog("INFO : [template_pixel_app_start_pixelapp_task] leaving template_pixel_app_start_pixelapp_task\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
 };

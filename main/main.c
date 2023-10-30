@@ -35,6 +35,7 @@
 #include "mr_display.h"
 #include "elite_particle.h"
 #include "elite_rain.h"
+#include "elite_tetris.h"
 #include "tcp_server.h"
 #include "elite_shell.h"
 

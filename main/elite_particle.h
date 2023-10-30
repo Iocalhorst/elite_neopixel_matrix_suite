@@ -15,22 +15,22 @@ typedef struct{
   float fvx;
   float fvy;
   sfRGBA col;
-}particle_t;
+}elite_particle_t;
 
 
 typedef struct{
   size_t num_particles;
-}particle_shower_config_t;
+}elite_particle_shower_config_t;
 
 typedef struct{
-  particle_t *particles;
+  elite_particle_t *particles;
   size_t num_particles;
-}particle_shower_t;
+}elite_particle_shower_t;
 
- particle_shower_t* particle_shower_construct(particle_shower_config_t self_config){
-  particle_shower_t *self=(particle_shower_t*)malloc(sizeof(particle_shower_t));
+ elite_particle_shower_t* elite_particle_shower_construct(elite_particle_shower_config_t self_config){
+  elite_particle_shower_t *self=(elite_particle_shower_t*)malloc(sizeof(elite_particle_shower_t));
   self->num_particles=self_config.num_particles;
-  self->particles=(particle_t*)malloc(self->num_particles*sizeof(particle_t));
+  self->particles=(elite_particle_t*)malloc(self->num_particles*sizeof(elite_particle_t));
   for (int i=0;i<self->num_particles;i++){
     self->particles[i].fx=(float)(esp_random()%10);
     self->particles[i].fy=-30.0f-(float)(esp_random()%30);
@@ -49,10 +49,10 @@ typedef struct{
   return self;
 };
 
-bool particle_shower_update(particle_shower_t *self, float fElapsedTime){
+bool elite_particle_shower_update(elite_particle_shower_t *self, float fElapsedTime){
   for (int i=0;i<self->num_particles;i++){
     self->particles[i].fx+=self->particles[i].fvx*fElapsedTime;
-    self->particles[i].fy+=self->particles[i].fvy*fElapsedTime;
+    self->particles[i].fy+=self->particles[i].fvy*fElapsedTime*0.75f;
     if (self->particles[i].fy>=30.0f) {
       float fvy=10.0f+(float)(esp_random()%5);
       float frandr=10.0f+(float)(esp_random()%10);
@@ -69,17 +69,22 @@ bool particle_shower_update(particle_shower_t *self, float fElapsedTime){
   return true;
 };
 
-bool particle_shower_draw(elite_pixel_game_t* ente,particle_shower_t *self){
+bool elite_particle_shower_draw(elite_pixel_game_t* ente,elite_particle_shower_t *self){
   for (int i=0;i<self->num_particles;i++){
     //elite_pixel_game_fputpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGB col)
     int16_t x=(int16_t)self->particles[i].fx;
     int16_t y=(int16_t)self->particles[i].fy;
-    if (y>=0&&y<30&&x>=0&&x<10) {elite_pixel_game_fputpixelRGBA(ente,x,y,self->particles[i].col);};
+    sfRGBA c=self->particles[i].col;
+    c.fr*=0.5f;
+    c.fg*=0.5f;
+    c.fb*=0.5f;
+    //c.fa*=0.5f;
+    if (y>=0&&y<30&&x>=0&&x<10) {elite_pixel_game_fputpixelRGBA(ente,x,y,c);};
   };
   return true;
 };
 
-bool particle_shower_destruct(particle_shower_t *self){
+bool elite_particle_shower_destruct(elite_particle_shower_t *self){
   free(self->particles);
   free(self);
   self=NULL;

@@ -176,7 +176,7 @@ static void elite_logger_task(void* args){
 
   global_log_buffer=(char*)malloc(global_log_buffer_size*sizeof(char));
   uint32_t ulNotificationValue;
-  size_t max_tx_buf=768;
+  size_t max_tx_buf=1000;
   char* tx_buf=(char*)malloc(max_tx_buf);
   memset(tx_buf,0,max_tx_buf);
   bool elite_logger_exit_condition=false;
@@ -189,7 +189,7 @@ static void elite_logger_task(void* args){
               break;
             };
             default :{
-              sprintf(tx_buf,"log4joy : %s",global_log_buffer);
+              sprintf(tx_buf,"log4joy [len=%i]: %s",strlen(global_log_buffer),global_log_buffer);
               size_t tx_len=strlen(tx_buf);
               send(sock,tx_buf,tx_len,0);
               memset(tx_buf,0,max_tx_buf);

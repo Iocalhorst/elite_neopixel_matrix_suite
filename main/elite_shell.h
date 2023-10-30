@@ -9,6 +9,7 @@
 #include "elite_rain.h"
 #include "elite_spriteshow.h"
 #include "elite_pixel_app_template.h"
+#include "elite_tetris.h"
 #pragma once
 
 
@@ -76,6 +77,7 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
   if (cmd==0&&!strcmp(buf,"template\n\0"))cmd=9;
   if (cmd==0&&!strcmp(buf,"spriteshow\n\0"))cmd=10;
   if (cmd==0&&!strcmp(buf,"sum\n\0"))cmd=11;
+  if (cmd==0&&!strcmp(buf,"tetris\n\0"))cmd=12;
 
 
   char* wtf_str="wtf?\n";
@@ -136,7 +138,12 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
         };
         break;
     };
-
+    case 12 : {
+        if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false){
+            elite_tetris_start_task();
+        };
+        break;
+    };
     default : {
       send(outfd,wtf_str,strlen(wtf_str),flags);
       return true;

@@ -459,7 +459,7 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
         return self;
 };
 
-bool spriteshow_on_user_update(void* params,elite_pixel_game_t *ente,float fElapsedTime){
+bool spriteshow_on_user_update(void* v_self,elite_pixel_game_t *ente,float fElapsedTime){
 //debug tracing in
     if (spriteshow_on_user_update_entered_log==false) {
         spriteshow_on_user_update_entered_log=true;
@@ -469,7 +469,7 @@ bool spriteshow_on_user_update(void* params,elite_pixel_game_t *ente,float fElap
 
 
 //body
-    spriteshow_t *self=(spriteshow_t*)params;
+    spriteshow_t *self=(spriteshow_t*)v_self;
     elite_pixel_game_set_target_layer(ente,0);
     sfRGBA c={4.0f,16.0f,4.0f,255.0f};
     elite_pixel_game_fill_flayerRGBA(ente,c);
@@ -575,11 +575,11 @@ bool spriteshow_on_user_update(void* params,elite_pixel_game_t *ente,float fElap
 };
 
 
-bool spriteshow_on_user_destroy(void* params){
+bool spriteshow_on_user_destroy(void* v_self){
 
     elog("INFO : [spriteshow_on_user_update] entering spriteshow_on_user_destroy()\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
-    spriteshow_t *self=(spriteshow_t*)params;
+    spriteshow_t *self=(spriteshow_t*)v_self;
     elog("INFO : [spriteshow_on_user_update] deallocating self(spriteshow)\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
 

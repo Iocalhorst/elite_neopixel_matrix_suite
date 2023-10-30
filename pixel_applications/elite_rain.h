@@ -2,6 +2,7 @@
 #include "elite_pixel_game_ente.h"
 #include "elite_particle.h"
 #include "elite.h"
+#include "elite_tetris_agent.h"
 #include "main.h"
 
 
@@ -9,7 +10,7 @@
 
 typedef struct {
   char* app_name;
-  particle_shower_t* my_particle_shower;
+  elite_particle_shower_t* my_particle_shower;
 }rain_app_t;
 
 
@@ -36,8 +37,8 @@ rain_app_t* rain_app_construct(elite_pixel_game_t* ente){
   elog("INFO : [rain_app_construct] successfully constructed self(rain_app_t); returning self from constructor\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
-  particle_shower_config_t my_particle_shower_config={.num_particles=50};
-  self->my_particle_shower=particle_shower_construct(my_particle_shower_config);
+  elite_particle_shower_config_t my_particle_shower_config={.num_particles=50};
+  self->my_particle_shower=elite_particle_shower_construct(my_particle_shower_config);
 
 
   return self;
@@ -63,9 +64,9 @@ bool rain_on_user_update(void* params,elite_pixel_game_t *ente,float fElapsedTim
       elog("INFO : [rain_on_user_update] calling particle_shower_update(fElapsedTime) - this notification will only occur once\n");
       vTaskDelay(log_delay / portTICK_PERIOD_MS);
     };
-  particle_shower_update(self->my_particle_shower,fElapsedTime);
+  elite_particle_shower_update(self->my_particle_shower,fElapsedTime);
 
-  particle_shower_draw(ente,self->my_particle_shower);
+  elite_particle_shower_draw(ente,self->my_particle_shower);
   if (on_user_update_leaving_log==false) {
       on_user_update_leaving_log=true;
       elog("INFO : [rain_on_user_update] leaving rain_on_user_update() - this notification will only occur once\n");
@@ -75,7 +76,9 @@ bool rain_on_user_update(void* params,elite_pixel_game_t *ente,float fElapsedTim
   return true;
 };
 
+//todo : proper cleanup
 bool rain_on_user_destroy(void* params){
+
 
     elog("INFO : [rain_on_user_update] entering rain_app_destroy()\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
@@ -83,6 +86,8 @@ bool rain_on_user_destroy(void* params){
     elog("INFO : [rain_on_user_update] deallocating self(rain_app)\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
     if (self!=NULL) {
+
+        elite_particle_shower_destruct(self->my_particle_shower);
         free(self);
     elog("INFO : [rain_on_user_update] successfully deallocated self(rain_app)\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
