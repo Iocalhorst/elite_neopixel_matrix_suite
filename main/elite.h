@@ -26,6 +26,8 @@
 #include <sys/unistd.h>
 #include <dirent.h>
 
+//#include <semphr.h>
+
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 #include "esp_chip_info.h"
 #include "spi_flash_mmap.h"
@@ -166,8 +168,7 @@ static void elite_logger_task(void* args){
   addr.sin_family = AF_INET;
   addr.sin_port = PP_HTONS(SOCK_TARGET_PORT);
   addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
-
-  sock = lwip_socket(AF_INET, SOCK_DGRAM, 0);
+       sock = lwip_socket(AF_INET, SOCK_DGRAM, 0);
 
   if (sock>=0) {
     ESP_LOGI(TAG, "Socket %d, udp , target_addr %s, port %d",sock,SOCK_TARGET_HOST,SOCK_TARGET_PORT);
@@ -180,9 +181,13 @@ static void elite_logger_task(void* args){
   char* tx_buf=(char*)malloc(max_tx_buf);
   memset(tx_buf,0,max_tx_buf);
   bool elite_logger_exit_condition=false;
+  SemaphoreHandle_t xSemaphore = xSemaphoreCreateMutex();
+
+
 
   while (!elite_logger_exit_condition) {
       if (xTaskNotifyWait(0, 0, &ulNotificationValue, portMAX_DELAY)) {
+             if( xSemaphoreTake( xSemaphore, ( TickType_t ) 10 ) == pdTRUE )
         switch(ulNotificationValue){
             case 0 : {
               elite_logger_exit_condition=true;
@@ -197,7 +202,8 @@ static void elite_logger_task(void* args){
             };
         };
 
-      };
+      xSemaphoreGive( xSemaphore );
+    };
   };
   free(tx_buf);
   if (sock != -1) {
@@ -217,6 +223,7 @@ static void elite_logger_task(void* args){
 
 
 void elog(const char* s){
+
 
 //        size_t *ps=(char)malloc(strlen(s);
 configASSERT(global_log_buffer);
