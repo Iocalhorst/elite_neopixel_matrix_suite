@@ -6,17 +6,23 @@
 #define OTA_URL_SIZE 256
 
 
-#define EXAMPLE_ESP_WIFI_SSID      "wlan0"
-#define EXAMPLE_ESP_WIFI_PASS      "messwiththebestdieliketherest"
+#define EXAMPLE_ESP_WIFI_SSID      "yourSSID"
+#define EXAMPLE_ESP_WIFI_PASS      "yourPassword"
 #define EXAMPLE_ESP_MAXIMUM_RETRY  5
 
 #ifndef SOCK_TARGET_HOST
-#define SOCK_TARGET_HOST  "192.168.0.249"
+#define SOCK_TARGET_HOST  "yourHostIP4address" //the one from your desktop for udp logging/monitoring and tcp shell access
 #endif
 
 #ifndef SOCK_TARGET_PORT
-#define SOCK_TARGET_PORT  9001
+#define SOCK_TARGET_PORT  9001 //as defined in elite_logger.py
 #endif
+
+#define TCP_SERVER_PORT             9002 // use nc or netcat or sth to connect to esp32 on this port for elite_shell cli
+#define KEEPALIVE_IDLE              60000
+#define KEEPALIVE_INTERVAL          5000
+#define KEEPALIVE_COUNT             1337
+
 
 #define nullptr NULL
 

@@ -32,7 +32,7 @@
 #include "defines.h"
 #include "elite.h"
 #include "elite_pixel_game_ente.h"
-#include "mr_display.h"
+#include "elite_display.h"
 #include "elite_particle.h"
 #include "elite_rain.h"
 #include "elite_tetris.h"
@@ -77,24 +77,24 @@ static void main_eye_task3(void* args){
 
 
 
-void main_draw_background(){
+void main_draw_background(elite_display_t* mr_display){
   for (int yy=0;yy<30;yy++){
     for (int xx=0;xx<10;xx++){
-        mr_display_put_pixel(xx,yy,dark_green);
+        elite_display_put_pixel(mr_display,xx,yy,dark_green);
     };
   };
 
 };
-void main_clear_display(){
+void main_clear_display(elite_display_t* mr_display){
   for (int yy=0;yy<30;yy++){
     for (int xx=0;xx<10;xx++){
-        mr_display_put_pixel(xx,yy,black);
+        elite_display_put_pixel(mr_display,xx,yy,black);
     };
   };
 
 };
 
-void main_draw_monsters(){
+void main_draw_monsters(elite_display_t* mr_display){
   for (int i=0;i<NUM_MONSTERS;i++) {
     int offset_y=i*10;
     for (int y=0;y<10;y++){
@@ -102,33 +102,33 @@ void main_draw_monsters(){
         int ci=monster_bitmap[x+y*10];
         if (ci!=0) {
           sRGB c={monsters[i].cols[ci].r,monsters[i].cols[ci].g,monsters[i].cols[ci].b};
-          mr_display_put_pixel(x,y+offset_y,c);
+          elite_display_put_pixel(mr_display,x,y+offset_y,c);
         };
       };
     };
     if (monsters[i].eyes_direction==UP_LEFT) {
-        mr_display_put_pixel(3,offset_y+3,black);
-        mr_display_put_pixel(6,offset_y+3,black);
+        elite_display_put_pixel(mr_display,3,offset_y+3,black);
+        elite_display_put_pixel(mr_display,6,offset_y+3,black);
     };
     if (monsters[i].eyes_direction==UP_CENTER) {
-        mr_display_put_pixel(4,offset_y+3,black);
-        mr_display_put_pixel(6,offset_y+3,black);
+        elite_display_put_pixel(mr_display,4,offset_y+3,black);
+        elite_display_put_pixel(mr_display,6,offset_y+3,black);
     };
     if (monsters[i].eyes_direction==UP_RIGHT) {
-        mr_display_put_pixel(4,offset_y+3,black);
-        mr_display_put_pixel(7,offset_y+3,black);
+        elite_display_put_pixel(mr_display,4,offset_y+3,black);
+        elite_display_put_pixel(mr_display,7,offset_y+3,black);
     };
     if (monsters[i].eyes_direction==DOWN_LEFT) {
-        mr_display_put_pixel(3,offset_y+4,black);
-        mr_display_put_pixel(6,offset_y+4,black);
+        elite_display_put_pixel(mr_display,3,offset_y+4,black);
+        elite_display_put_pixel(mr_display,6,offset_y+4,black);
     };
     if (monsters[i].eyes_direction==DOWN_CENTER) {
-        mr_display_put_pixel(4,offset_y+4,black);
-        mr_display_put_pixel(6,offset_y+4,black);
+        elite_display_put_pixel(mr_display,4,offset_y+4,black);
+        elite_display_put_pixel(mr_display,6,offset_y+4,black);
     };
     if (monsters[i].eyes_direction==DOWN_RIGHT) {
-        mr_display_put_pixel(4,offset_y+4,black);
-        mr_display_put_pixel(7,offset_y+4,black);
+        elite_display_put_pixel(mr_display,4,offset_y+4,black);
+        elite_display_put_pixel(mr_display,7,offset_y+4,black);
     };
 
   };
@@ -334,6 +334,19 @@ void app_main(void){
   vTaskDelay(log_delay / portTICK_PERIOD_MS);}
     //const char* base_path = "/data";
 
+    //elog("DEBUG : [main] waiting for ota task to stop\n");
+    //while (ota_has_stopped==false) {
+        //vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+//    };
+    elog("DEBUG : [main] waiting 5s before trying to setup mr_display\n");
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
+
+
+    mr_displays_global_handle=elite_display_create_default();
+
+    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
     bool main_exit_condition=false;
     elog("INFO : [main] starting main monster loop\n");
 
@@ -341,11 +354,10 @@ void app_main(void){
     while (main_exit_condition!=true) {              //xTaskNotify(p_elite_logger_task_handle,TEST_LOG_CMD,3);//3==eSetValueWithOverwrite
 
         if (!elite_theres_a_pixel_game_running) {
-              main_clear_display();
-              main_draw_background();
-              main_draw_monsters();
+              main_clear_display(mr_displays_global_handle);
+              main_draw_background(mr_displays_global_handle);
+              main_draw_monsters(mr_displays_global_handle);
               vTaskDelay(20 / portTICK_PERIOD_MS);
-              mr_display_update_leds();
         };
     };
 

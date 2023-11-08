@@ -1,2 +1,11 @@
-idf_component_register(SRCS "main.c" INCLUDE_DIRS "." "../pixel_applications"
+idf_component_register(SRCS "main.c" INCLUDE_DIRS "." 
+                "../elite_components" 
+                "../elite_components/elite_display" 
+                "../elite_components/elite_shell" 
+                "../elite_components/elite_pixel_game_ente"                 
+                "../elite_components/elite_pixel_applications"
+                "../elite_components/elite_pixel_applications/elite_pixel_app_bare_minimum_template"
+                "../elite_components/elite_pixel_applications/elite_rain"
+                "../elite_components/elite_pixel_applications/elite_spriteshow"
+                "../elite_components/elite_pixel_applications/elite_tetris"
                     EMBED_FILES "favicon.ico" "upload_script.html")
