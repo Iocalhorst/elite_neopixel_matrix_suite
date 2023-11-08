@@ -80,9 +80,9 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
   if (cmd==0&&!strcmp(buf,"spriteshow\n\0"))cmd=10;
   if (cmd==0&&!strcmp(buf,"sum\n\0"))cmd=11;
   if (cmd==0&&!strcmp(buf,"tetris\n\0"))cmd=12;
-  if (cmd==0&&!strcmp(buf,"down\n\0"))cmd=13;
+  if (cmd==0&&!strcmp(buf,"brightness down\n\0"))cmd=13;
   if (cmd==0&&!strcmp(buf,"lower\n\0"))cmd=13;
-  if (cmd==0&&!strcmp(buf,"up\n\0"))cmd=14;
+  if (cmd==0&&!strcmp(buf,"brightness up\n\0"))cmd=14;
   if (cmd==0&&!strcmp(buf,"higher\n\0"))cmd=14;
   if (cmd==0&&!strcmp(buf,"gamma up\n\0"))cmd=15;
   if (cmd==0&&!strcmp(buf,"gamma down\n\0"))cmd=16;
@@ -112,7 +112,7 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
     };
     case 5 : { elite_test_little_fs();break;};
     case 6 : {
-        const char *help_str="try <rain> <kill> <reboot> <server> <exit> <testfs> <template> <spriteshow>";
+        const char *help_str="try <reboot> <kill> <rain> <spriteshow> <tetris> <template> <server> <brightness up> <brightness down> <gamma up> <gamma down> <getsprites>";
         send(outfd,help_str,strlen(help_str),flags);
         return true;
         break;

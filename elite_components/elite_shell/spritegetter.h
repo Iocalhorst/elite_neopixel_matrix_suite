@@ -26,7 +26,7 @@
 #endif
 #pragma once
 
-#define ASSET_SERVER_PORT 8000
+
 void get_sprite(int i){
   char log_str[256]={0};
   int sprite_sock;

@@ -13,6 +13,7 @@
 #ifndef SOCK_TARGET_HOST
 #define SOCK_TARGET_HOST  "yourHostIP4address" //the one from your desktop for udp logging/monitoring and tcp shell access
 #endif
+#define ASSET_SERVER_PORT 8000
 
 #ifndef SOCK_TARGET_PORT
 #define SOCK_TARGET_PORT  9001 //as defined in elite_logger.py
