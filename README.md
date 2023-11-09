@@ -1,7 +1,7 @@
 # elite_neopixel_matrix_suite
 esp-idf(5.1+) based gfx engine for fast led-matrix game/animation development + example applications 
 
-very early stage. but if you want to give it a try : 
+very early stage. display size is 10x30 pixels - hardcoded. but if you want to give it a try or customize feel free  : 
 
 clone the repo
 
