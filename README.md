@@ -20,8 +20,13 @@ to see available cli-commands :
 
 user@esp32matrix:/$ help 
 
-to upload the spriteshow asset-files onto the littleFS partition you can do: 
+you can try the "rain" "tetris" "template" applications without further steps.
+you must use "kill" command before starting a different animation.
+"reboot" if things go wrong.
 
+before using the "spriteshow" command to start the animation, the littleFS partition needs to be formatted
+this should happen automatically. then you need to upload the files from the asset folder. 
+to upload the spriteshow asset-files onto the littleFS partition you can do: 
 cd elite_neopixel_matrix_suite/elite_components/elite_pixel_applications/elite_spriteshow/assets
 
 python3 -m http.server
@@ -29,6 +34,8 @@ python3 -m http.server
 then use the cli command :
 
 user@esp32matrix:/$ getsprites
+
+or use "server" command in the cli to start the (webbased) fileserver running on port 80 and do it manually via browser from your host machine- which is tedious.
 
 i'll go to sleep now. cya soon
 
