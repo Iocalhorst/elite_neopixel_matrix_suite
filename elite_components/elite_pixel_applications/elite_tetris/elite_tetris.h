@@ -6,6 +6,7 @@
 #include "string.h"
 #include "elite_tetris_agent.h"
 #include "elite_tetris_block.h"
+#include "elite_colors.h"
 /*
 typedef struct {
    char *body_str;

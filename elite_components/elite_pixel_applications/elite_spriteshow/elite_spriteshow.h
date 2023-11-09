@@ -4,6 +4,7 @@
 #include "main.h"
 #pragma once
 #include "elite_spriteshow_assets.h"
+#include "elite_sprites.h"
 //since on-demand loading of resources from flash or external locations is noticably time-consuming(seconds maybe even),
 //instead of fetching resources "just-in-time" - at the end of the cyle (after fading out the last resources)
 //we want to pre-fetch "early" - specifically during the hold-time of the current resource

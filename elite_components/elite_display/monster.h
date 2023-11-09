@@ -6,6 +6,7 @@
 #include "esp_random.h"
 #include "elite.h"
 #include "elite_pixel_game_ente.h"
+#include "elite_colors.h"
 #pragma once
 const int minimum_eyes_delay=2500;
 const int maximum_eyes_add_delay=2500;
