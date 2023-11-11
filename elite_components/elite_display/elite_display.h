@@ -199,13 +199,13 @@ void elite_display_task(void* pv_params){
 
     while (true) {
 
-      if (elite_theres_a_pixel_game_running==true) xStreamBufferReceive(mr_displays_global_inputstream_handle,self->p_input_framebuf,self->p_input_framebuf_size,1000/portTICK_PERIOD_MS);
+      if (elite_theres_a_pixel_game_running==true) xStreamBufferReceive(mr_displays_global_inputstream_handle,self->p_input_framebuf,self->p_input_framebuf_size,5000/portTICK_PERIOD_MS);
     //    elite_display_apply_color_correction(self);
         elite_display_apply_brightness(self);
         elite_display_apply_gamma_correction(self);
         elite_display_prepare_output_framebuf(self);
         elite_display_update_leds(self);
-    vTaskDelay(20/portTICK_PERIOD_MS);
+    //vTaskDelay(20/portTICK_PERIOD_MS);
     };
 
 };
