@@ -68,6 +68,8 @@ bool elite_pixel_game_set_target_layer(elite_pixel_game_t *self,int tl);
 bool elite_pixel_game_render_to_framebuf(elite_pixel_game_t *self);
 //bool elite_pixel_game_fill_layer(elite_pixel_game_t *self,sRGB fill_col);
 bool elite_pixel_game_fill_flayerRGBA(elite_pixel_game_t *self,sfRGBA fill_fcol);
+
+void elite_pixel_game_draw_filled_circle(elite_pixel_game_t *self, float fx,float fy,float fr,sfRGBA col);
 //bool elite_pixel_game_putpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sRGB col);
 //bool elite_pixel_game_fputpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGB col);
 bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t* self,int16_t x,int16_t y,sfRGBA col);
@@ -287,6 +289,61 @@ bool elite_pixel_game_fputpixelRGBA_dont_hurt_the_canvas_log=false;
 static uint32_t canvas_hurt_count=0;
 
 
+void elite_pixel_game_draw_line(elite_pixel_game_t*self,int x1,int y1,int x2,int y2,sfRGBA c_){
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    sfRGBA c=c_;
+    int vx=1;
+    int vy=1;
+    // If both of the differences are 0 there will be a division by 0 below.
+    if (dx == 0 && dy == 0) {
+
+        if ((x1>=0)&&(y1>=0)&&(x1<10)&&(y1<30)) {
+            elite_pixel_game_fputpixelRGBA(self,x1,y1,c);
+            c.fr*=0.7f;
+            c.fg*=0.7f;
+            c.fb*=0.7f;
+            c.fa*=0.7f;
+
+        }
+        return;
+    }
+
+    if ((dx*dx) > (dy*dy)) {
+
+        if (x1 > x2) vx*=-1;
+        int x=x1;
+        while (x!=x2) {
+            int y = dy*(x - x1)/dx + y1;
+            if ((x>=0)&&(y>=0)&&(x<10)&&(y<30)) {
+                elite_pixel_game_fputpixelRGBA(self,x,y,c);
+                c.fr*=0.7f;
+                c.fg*=0.7f;
+                c.fb*=0.7f;
+                c.fa*=0.7f;
+            }
+            x+=vx;
+        };
+
+    } else {
+        if (y1 > y2) vy*=-1;
+        int y=y1;
+        while (y!=y2) {
+            int x = dx*(y - y1)/dy + x1;
+            if ((x>=0)&&(y>=0)&&(x<10)&&(y<30)) {
+                elite_pixel_game_fputpixelRGBA(self,x,y,c);
+                c.fr*=0.7f;
+                c.fg*=0.7f;
+                c.fb*=0.7f;
+                c.fa*=0.7f;
+            };
+            y+=vy;
+        };
+
+    };
+};
+
+
 bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t *self,int16_t x,int16_t y,sfRGBA fSrcColor) {
   //tracing pre
       if (elite_pixel_game_fputpixelRGBA_entered_log==false) {
@@ -426,6 +483,35 @@ if (elite_pixel_game_fill_flayerRGBA_leaving_log==false) {
 
   return true;
 }
+
+
+void elite_pixel_game_draw_filled_circle(elite_pixel_game_t *self, float fx,float fy,float fr,sfRGBA col){
+    int x1=(int)(fx-fr-1.0f);
+    int x2=(int)(fx+fr+1.0f);
+    int y1=(int)(fy-fr-1.0f);
+    int y2=(int)(fy+fr+1.0f);
+
+    for (int y=y1;y<y2;y++) {
+        for (int x=x1;x<x2;x++) {
+            if (x<0&&x>self->screen_width&&y<0&&y>self->screen_height) continue;
+            float fdx=fabs(fx-(float)x);
+            float fdy=fabs(fy-(float)y);
+            float fd=sqrt(fdx*fdx+fdy*fdy);
+            if (fd<=fr){
+                elite_pixel_game_fputpixelRGBA(self,x,y,col);
+            };
+        };
+    };
+};
+
+  //        float fa=(1.0f-((d/r)*(d/r)))*255.0f;
+   //fa*=0.5;
+   //fa+=127;
+    //      if (fa>255.0f) fa=255.0f;
+   //if (fa<=0.0f) fa=0.0f;
+
+   //if (shade) {c.a=(uint8_t)fa;};
+   //if (cEliteTools::apprx(d)<=cEliteTools::apprx(r)) {this->putPixelRGBA(j,i,c);};
 
 
 

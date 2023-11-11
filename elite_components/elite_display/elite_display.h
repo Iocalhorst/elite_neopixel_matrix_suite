@@ -233,8 +233,8 @@ void elite_display_gamma_down(elite_display_t* self){
 elite_display_t* elite_display_create_default(){
 
       elite_display_config_t elite_display_config={
-            .brightness=0.1f,
-            .gamma_correction=0.85f,
+            .brightness=0.4f,
+            .gamma_correction=0.725f,
             .color_correction_r=1.0f,
             .color_correction_g=1.0f,
             .color_correction_b=1.0f,

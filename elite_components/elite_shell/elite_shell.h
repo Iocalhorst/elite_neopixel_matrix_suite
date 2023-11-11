@@ -10,6 +10,7 @@
 #include "elite_spriteshow.h"
 #include "elite_pixel_app_template.h"
 #include "elite_tetris.h"
+#include "line_of_sight_demo.h"
 #include "elite.h"
 
 #pragma once
@@ -86,6 +87,7 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
   if (cmd==0&&!strcmp(buf,"higher\n\0"))cmd=14;
   if (cmd==0&&!strcmp(buf,"gamma up\n\0"))cmd=15;
   if (cmd==0&&!strcmp(buf,"gamma down\n\0"))cmd=16;
+  if (cmd==0&&!strcmp(buf,"line\n\0"))cmd=17;
 
   char* wtf_str="wtf?\n";
   char* ok_str="ok\n";
@@ -174,6 +176,12 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
             elite_display_gamma_down(mr_displays_global_handle);
         };
         break;
+    };
+    case 17 : {
+      if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false){
+          line_of_sight_demo_start_task();
+      };
+      break;
     };
     default : {
       send(outfd,wtf_str,strlen(wtf_str),flags);

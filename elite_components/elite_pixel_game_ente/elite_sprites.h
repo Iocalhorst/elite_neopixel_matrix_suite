@@ -1,5 +1,36 @@
 #pragma once
 
+typedef enum {
+  RGB8_RAW,
+  RGBA8_RAW,
+  FLOAT32_RGB,
+  FLOAT32_RGBA,
+  CHAR_INDEXED_COLORS,
+}pixel_data_format_t;
+
+
+#define PALETTE_COLOR_FMT sfRGBA
+
+//the sprites_update funtion must be called by the engine.
+//that requires
+//p_current_frame
+
+typedef struct {
+  uint16_t width,height,num_frames;
+  char url[128];
+  bool load_failed;
+  PALETTE_COLOR_FMT indexed_colors[16];
+  void* *pixel_data;
+  pixel_data_format_t fmt;
+  sfRGBA p_current_frame;
+  float frame_duration;
+}elite_animated_sprite_t;
+
+
+
+
+
+
 typedef struct {
   uint16_t width,height;
   bool load_immediatly;

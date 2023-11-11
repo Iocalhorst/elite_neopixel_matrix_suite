@@ -44,6 +44,21 @@ esp_vfs_littlefs_conf_t conf = {
     .dont_mount = false,
 };
 
+//#define OLIVEC_SWAP(T, a, b) do { T t = a; a = b; b = t; } while (0) |hmm
+void elite_swap(int *a, int *b)
+{
+    int temp = *a;
+    *b = *a;
+    *a = temp;
+};
+void elite_swapf(float *a, float*b)
+{
+    float temp = *a;
+    *b = *a;
+    *a = temp;
+};
+
+
 bool eliteAssert(bool ok,const char* msg);
 TaskHandle_t p_elite_logger_task_handle;
 

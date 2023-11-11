@@ -1,0 +1,34 @@
+
+TODO :
+
+ sprites and other asset data MUST be managed and handled by the engine. (at least the user should be bothered last)
+@main
+
+  proper ota update procedure
+  
+@elite_pixel_game_ente
+
+  finalize multiple layer implementation
+  draw_string();
+  draw_circle()
+  draw_filled_circle()
+  draw_line()
+  draw_rectangle()
+  draw_filled_rectangle()
+  draw_shaded_circle()
+
+@elite_sprites
+
+  typedef struct elite_animated_sprite_t;
+  elite_animated_sprite_construct();
+  elite_animated_sprite_load();
+  elite_animated_sprite_update();?
+  elite_animated_sprite_destruct();
+
+@elite_shell
+
+  argument parser
+
+@elite_pixel_applications
+
+  aquarium
