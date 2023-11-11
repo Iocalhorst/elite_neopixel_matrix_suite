@@ -539,10 +539,12 @@ bool elite_pixel_game_update(elite_pixel_game_t *self,float fElapsedTime){
   if (self->init_ok!=true) return false;
   bool on_user_update_result=false;
 
+
+/*
 for (int i=0;i<300;i++) {FRAMEBUF_PIXFORMAT c={0.0f,0.0f,0.0f};self->p_framebuf[i]=c;};
 
 for (int i=0;i<300;i++) {LAYER_PIXFORMAT c={0.0f,0.0f,0.0f,255.0f};self->p_layer[0]->pixels[i]=c;};
-
+*/
 
 
 if (on_user_update_pre_log==false) {
@@ -649,8 +651,8 @@ void elite_pixel_game_task(void* params){
     elite_pixel_game_update(p_pixel_game,p_pixel_game->fElapsedTime);
     //TODO factor out display output function calls to some more appropriate place ...
 
-    vTaskDelay(20/ portTICK_PERIOD_MS);
-    pixelapp_runtime_ms+=20;
+    //vTaskDelay(20/ portTICK_PERIOD_MS);
+    //pixelapp_runtime_ms+=20;
     if (elite_kill_pixel_game==true) break;
   };
 

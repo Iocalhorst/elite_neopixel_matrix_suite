@@ -5,7 +5,7 @@ TODO :
 @main
 
   proper ota update procedure
-  
+
 @elite_pixel_game_ente
 
   finalize multiple layer implementation
@@ -32,3 +32,6 @@ TODO :
 @elite_pixel_applications
 
   aquarium
+
+@elite_display
+  handle stream_buffer_timeout
