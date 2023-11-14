@@ -4,6 +4,9 @@ TODO :
  sprites and other asset data MUST be managed and handled by the engine. (at least the user should be bothered last)
 @main
 
+      manager class
+      make logger thread-safe and convenient
+
   proper ota update procedure
 
 @elite_pixel_game_ente

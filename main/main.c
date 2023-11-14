@@ -80,7 +80,7 @@ static void main_eye_task3(void* args){
 void main_draw_background(elite_display_t* mr_display){
   for (int yy=0;yy<30;yy++){
     for (int xx=0;xx<10;xx++){
-        elite_display_put_pixel(mr_display,xx,yy,dark_green);
+        elite_display_putpixelRGB8(mr_display,xx,yy,dark_green);
     };
   };
 
@@ -88,7 +88,7 @@ void main_draw_background(elite_display_t* mr_display){
 void main_clear_display(elite_display_t* mr_display){
   for (int yy=0;yy<30;yy++){
     for (int xx=0;xx<10;xx++){
-        elite_display_put_pixel(mr_display,xx,yy,black);
+        elite_display_putpixelRGB8(mr_display,xx,yy,black);
     };
   };
 
@@ -102,33 +102,33 @@ void main_draw_monsters(elite_display_t* mr_display){
         int ci=monster_bitmap[x+y*10];
         if (ci!=0) {
           sRGB c={monsters[i].cols[ci].r,monsters[i].cols[ci].g,monsters[i].cols[ci].b};
-          elite_display_put_pixel(mr_display,x,y+offset_y,c);
+          elite_display_putpixelRGB8(mr_display,x,y+offset_y,c);
         };
       };
     };
     if (monsters[i].eyes_direction==UP_LEFT) {
-        elite_display_put_pixel(mr_display,3,offset_y+3,black);
-        elite_display_put_pixel(mr_display,6,offset_y+3,black);
+        elite_display_putpixelRGB8(mr_display,3,offset_y+3,black);
+        elite_display_putpixelRGB8(mr_display,6,offset_y+3,black);
     };
     if (monsters[i].eyes_direction==UP_CENTER) {
-        elite_display_put_pixel(mr_display,4,offset_y+3,black);
-        elite_display_put_pixel(mr_display,6,offset_y+3,black);
+        elite_display_putpixelRGB8(mr_display,4,offset_y+3,black);
+        elite_display_putpixelRGB8(mr_display,6,offset_y+3,black);
     };
     if (monsters[i].eyes_direction==UP_RIGHT) {
-        elite_display_put_pixel(mr_display,4,offset_y+3,black);
-        elite_display_put_pixel(mr_display,7,offset_y+3,black);
+        elite_display_putpixelRGB8(mr_display,4,offset_y+3,black);
+        elite_display_putpixelRGB8(mr_display,7,offset_y+3,black);
     };
     if (monsters[i].eyes_direction==DOWN_LEFT) {
-        elite_display_put_pixel(mr_display,3,offset_y+4,black);
-        elite_display_put_pixel(mr_display,6,offset_y+4,black);
+        elite_display_putpixelRGB8(mr_display,3,offset_y+4,black);
+        elite_display_putpixelRGB8(mr_display,6,offset_y+4,black);
     };
     if (monsters[i].eyes_direction==DOWN_CENTER) {
-        elite_display_put_pixel(mr_display,4,offset_y+4,black);
-        elite_display_put_pixel(mr_display,6,offset_y+4,black);
+        elite_display_putpixelRGB8(mr_display,4,offset_y+4,black);
+        elite_display_putpixelRGB8(mr_display,6,offset_y+4,black);
     };
     if (monsters[i].eyes_direction==DOWN_RIGHT) {
-        elite_display_put_pixel(mr_display,4,offset_y+4,black);
-        elite_display_put_pixel(mr_display,7,offset_y+4,black);
+        elite_display_putpixelRGB8(mr_display,4,offset_y+4,black);
+        elite_display_putpixelRGB8(mr_display,7,offset_y+4,black);
     };
 
   };

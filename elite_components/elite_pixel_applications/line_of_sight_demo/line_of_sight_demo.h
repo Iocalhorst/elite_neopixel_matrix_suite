@@ -268,7 +268,7 @@ bool line_of_sight_demo_on_user_update(void* params,elite_pixel_game_t *ente,flo
                 c_light.fr*=((0.5f+0.5f)*fmod);
                 c_light.fg*=((0.5f+0.5f)*fmod);
                 c_light.fb*=((0.5f+0.5f)*fmod);
-                c_light.fa*=(fmod);
+                c_light.fa*=(fmod*fmod);
                 //c_shadow.fa*=fmod_a;
                 if (self->light_source.illumination_map[x][y]>0){
                     elite_pixel_game_fputpixelRGBA(ente,x,y,c_light);

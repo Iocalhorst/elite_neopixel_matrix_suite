@@ -38,6 +38,7 @@ typedef struct {
   //ill go for a hackish adapter byte banging function for now
   char* out_buf;
   int outfd;
+  int last_cmd;
 }elite_shell_t;
 
 
@@ -56,9 +57,12 @@ elite_shell_t* elite_shell_construct(){
   self->named_env_vars[1]=hostname;
   self->named_env_vars[2]=pwd;
   self->named_env_vars[3]=prompt;
+  self->last_cmd=0;
 
   return self;
 };
+
+
 bool elite_shell_send_prompt(elite_shell_t *self,int outfd,int flags){
   char r[128]={0};
   sprintf(r,"%s@%s:%s%s",self->named_env_vars[0].value,self->named_env_vars[1].value,self->named_env_vars[2].value,self->named_env_vars[3].value);
@@ -66,10 +70,11 @@ bool elite_shell_send_prompt(elite_shell_t *self,int outfd,int flags){
   return true;
 };
 
-bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
+bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, size_t len,int flags){
 
   int cmd=0;
-  if (!strcmp(buf,"rain\n\0"))cmd=1;
+  if (cmd==0&&!strcmp(buf,".\n\0"))cmd=self->last_cmd;
+  if (cmd==0&&!strcmp(buf,"rain\n\0"))cmd=1;
   if (cmd==0&&!strcmp(buf,"reboot\n\0"))cmd=2;
   if (cmd==0&&!strcmp(buf,"kill\n\0"))cmd=3;
   if (cmd==0&&!strcmp(buf,"exit\n\0"))cmd=4;
@@ -89,6 +94,7 @@ bool elite_shell_handle_input(int outfd,const char* buf, size_t len,int flags){
   if (cmd==0&&!strcmp(buf,"gamma down\n\0"))cmd=16;
   if (cmd==0&&!strcmp(buf,"line\n\0"))cmd=17;
 
+  if (cmd>0) self->last_cmd=cmd;
   char* wtf_str="wtf?\n";
   char* ok_str="ok\n";
   switch (cmd){

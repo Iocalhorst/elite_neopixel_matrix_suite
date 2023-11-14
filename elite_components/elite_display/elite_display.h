@@ -16,7 +16,6 @@
 StreamBufferHandle_t mr_displays_global_inputstream_handle;
 
 
-
 led_strip_handle_t led_strip;
 
 int yx2led[][10]={
@@ -78,7 +77,7 @@ elite_display_t *mr_displays_global_handle;
 
 elite_display_t* elite_display_construct(elite_display_config_t* conf);
 void elite_display_update_leds(elite_display_t* self);
-void elite_display_putpixel(elite_display_t* self,int x,int y,OUTPUT_PIXFORMAT c);
+void elite_display_putpixelRGB8(elite_display_t* self,int x,int y,OUTPUT_PIXFORMAT c);
 void elite_display_fetch_framebuf(elite_display_t* self);
 void elite_display_apply_color_correction(elite_display_t* self);
 void elite_display_apply_brightness(elite_display_t* self);
@@ -110,25 +109,30 @@ elite_display_t* elite_display_construct(elite_display_config_t *conf){
         OUTPUT_PIXFORMAT c_out={0.0f,0.0f,0.0f};
         self->output_framebuf[i]=c_out;
     };
+
     mr_displays_global_inputstream_handle=xStreamBufferCreate(self->p_input_framebuf_size,self->p_input_framebuf_size);
+
     return self;
 };
 
 static bool stop_drawing=false;
 
-void elite_display_put_pixel(elite_display_t* self,int x,int y,OUTPUT_PIXFORMAT c){
-  if (stop_drawing) return;
-  if (eliteAssert(x>=0&&x<self->conf.width&&y>=0&&y<self->conf.height,"you've hurt the canvas - game over")) {stop_drawing=true;return;};
-  int pixel_index=x+self->conf.width*y;
-  INPUT_FRAMEBUF_PIXFORMAT c_;
-  c_.fr=c.r;
-  c_.fg=c.g;
-  c_.fb=c.b;
-  self->p_input_framebuf[pixel_index]=c_;
+void elite_display_putpixelRGB8(elite_display_t* self,int x,int y,OUTPUT_PIXFORMAT cRGB8){
+
+    if (stop_drawing) return;
+    if (eliteAssert(x>=0&&x<self->conf.width&&y>=0&&y<self->conf.height,"you've hurt the canvas - game over")) {stop_drawing=true;return;};
+    int pixel_index=x+self->conf.width*y;
+    INPUT_FRAMEBUF_PIXFORMAT cfRGB;
+    cfRGB.fr=cRGB8.r;
+    cfRGB.fg=cRGB8.g;
+    cfRGB.fb=cRGB8.b;
+    self->p_input_framebuf[pixel_index]=cfRGB;
+
 };
 
 
 void elite_display_update_leds(elite_display_t* self){
+
     for (int yy=0;yy<self->conf.height;yy++){
         for (int xx=0;xx<self->conf.width;xx++){
             int ledNumber=yx2led[yy][self->conf.width-xx-1];//i flipped the xy2led map... oops thats why
@@ -136,15 +140,17 @@ void elite_display_update_leds(elite_display_t* self){
             ESP_ERROR_CHECK(led_strip_set_pixel(led_strip, ledNumber, c.r,c.g,c.b));
         };
     };
-    ESP_ERROR_CHECK(led_strip_refresh(led_strip));
 
+    ESP_ERROR_CHECK(led_strip_refresh(led_strip));
 };
 
 void elite_display_fetch_framebuf(elite_display_t* self){
-  xStreamBufferReceive(mr_displays_global_inputstream_handle,
+
+    xStreamBufferReceive(mr_displays_global_inputstream_handle,
                          self->p_input_framebuf,
                          self->p_input_framebuf_size,
                          portMAX_DELAY);
+
 };
 
 
@@ -167,74 +173,95 @@ void elite_display_apply_brightness(elite_display_t* self){
 
 void elite_display_apply_gamma_correction(elite_display_t* self){
 
-        for (size_t i=0;i<self->conf.height*self->conf.width;i++) {
-              INPUT_FRAMEBUF_PIXFORMAT c=self->p_input_framebuf[i];
-              c.fr=255.0f*pow(c.fr/255.0f,self->conf.gamma_correction);
-              c.fg=255.0f*pow(c.fg/255.0f,self->conf.gamma_correction);
-              c.fb=255.0f*pow(c.fb/255.0f,self->conf.gamma_correction);
-              if (c.fr<=0.0f) c.fr=0.0f;
-              if (c.fg<=0.0f) c.fg=0.0f;
-              if (c.fb<=0.0f) c.fb=0.0f;
-              if (c.fr>=255.0f) c.fr=255.0f;
-              if (c.fg>=255.0f) c.fg=255.0f;
-              if (c.fb>=255.0f) c.fb=255.0f;
-              self->p_input_framebuf[i]=c;
-        };
+    for (size_t i=0;i<self->conf.height*self->conf.width;i++) {
+        INPUT_FRAMEBUF_PIXFORMAT c=self->p_input_framebuf[i];
+        c.fr=255.0f*pow(c.fr/255.0f,self->conf.gamma_correction);
+        c.fg=255.0f*pow(c.fg/255.0f,self->conf.gamma_correction);
+        c.fb=255.0f*pow(c.fb/255.0f,self->conf.gamma_correction);
+        if (c.fr<=0.0f) c.fr=0.0f;
+        if (c.fg<=0.0f) c.fg=0.0f;
+        if (c.fb<=0.0f) c.fb=0.0f;
+        if (c.fr>=255.0f) c.fr=255.0f;
+        if (c.fg>=255.0f) c.fg=255.0f;
+        if (c.fb>=255.0f) c.fb=255.0f;
+        self->p_input_framebuf[i]=c;
+    };
 };
 
 void elite_display_prepare_output_framebuf(elite_display_t* self){
-  OUTPUT_PIXFORMAT c_out;
-  INPUT_FRAMEBUF_PIXFORMAT c_in;
-  for (size_t i=0;i<self->conf.height*self->conf.width;i++) {
-      c_in=self->p_input_framebuf[i];
-      c_out.r=(uint8_t)c_in.fr;
-      c_out.g=(uint8_t)c_in.fg;
-      c_out.b=(uint8_t)c_in.fb;
-      self->output_framebuf[i]=c_out;
-  };
-
+    OUTPUT_PIXFORMAT c_out;
+    INPUT_FRAMEBUF_PIXFORMAT c_in;
+    for (size_t i=0;i<self->conf.height*self->conf.width;i++) {
+        c_in=self->p_input_framebuf[i];
+        c_out.r=(uint8_t)c_in.fr;
+        c_out.g=(uint8_t)c_in.fg;
+        c_out.b=(uint8_t)c_in.fb;
+        self->output_framebuf[i]=c_out;
+    };
 };
+
+void elite_display_print_settings(elite_display_t* p_display){
+    char log_str[128]={0};
+    sprintf(log_str,"INFO : [elite_display_] brightness : %f gamma: %f\n",p_display->conf.brightness,p_display->conf.gamma_correction);
+    elog(log_str);
+    vTaskDelay(log_delay/portTICK_PERIOD_MS);
+};
+
 void elite_display_task(void* pv_params){
     elite_display_t* self=(elite_display_t*)pv_params;
 
+    elite_display_print_settings(self);
     while (true) {
-
-      if (elite_theres_a_pixel_game_running==true) xStreamBufferReceive(mr_displays_global_inputstream_handle,self->p_input_framebuf,self->p_input_framebuf_size,5000/portTICK_PERIOD_MS);
-    //    elite_display_apply_color_correction(self);
+        if (elite_theres_a_pixel_game_running==true) {
+            xStreamBufferReceive(mr_displays_global_inputstream_handle,self->p_input_framebuf,self->p_input_framebuf_size,5000/portTICK_PERIOD_MS);
+        };
+            //    elite_display_apply_color_correction(self);
         elite_display_apply_brightness(self);
         elite_display_apply_gamma_correction(self);
         elite_display_prepare_output_framebuf(self);
         elite_display_update_leds(self);
-    //vTaskDelay(20/portTICK_PERIOD_MS);
+        vTaskDelay(5/portTICK_PERIOD_MS);
     };
-
 };
+
 void elite_display_brightness_down(elite_display_t* self){
-    self->conf.brightness-=0.025f;
-    if (self->conf.brightness<=0.00f) self->conf.brightness=0.00f;
+    self->conf.brightness-=0.01f;
+    if (self->conf.brightness<=0.00f) {
+        self->conf.brightness=0.00f;
+    };
+    elite_display_print_settings(self);
 };
 
 void elite_display_brightness_up(elite_display_t* self){
-    self->conf.brightness+=0.025f;
-    if (self->conf.brightness>=1.0f) self->conf.brightness=1.0f;
+    self->conf.brightness+=0.01f;
+    if (self->conf.brightness>=1.0f) {
+        self->conf.brightness=1.0f;
+    };
+    elite_display_print_settings(self);
 };
-
 
 
 void elite_display_gamma_up(elite_display_t* self){
-  self->conf.gamma_correction+=0.025f;
-  if (self->conf.gamma_correction>=2.0f) self->conf.gamma_correction=2.0f;
+    self->conf.gamma_correction+=0.01f;
+    if (self->conf.gamma_correction>=2.0f) {
+        self->conf.gamma_correction=2.0f;
+    };
+    elite_display_print_settings(self);
 };
 
 void elite_display_gamma_down(elite_display_t* self){
-    self->conf.gamma_correction-=0.025f;
-    if (self->conf.gamma_correction<=0.1f) self->conf.gamma_correction=0.1f;
+    self->conf.gamma_correction-=0.01f;
+    if (self->conf.gamma_correction<=0.1f) {
+        self->conf.gamma_correction=0.1f;
+    };
+    elite_display_print_settings(self);
 };
+
 elite_display_t* elite_display_create_default(){
 
       elite_display_config_t elite_display_config={
-            .brightness=0.4f,
-            .gamma_correction=0.725f,
+            .brightness=0.2f,
+            .gamma_correction=0.75f,
             .color_correction_r=1.0f,
             .color_correction_g=1.0f,
             .color_correction_b=1.0f,
@@ -244,8 +271,7 @@ elite_display_t* elite_display_create_default(){
       };
 
       elite_display_t* mr_display=elite_display_construct(&elite_display_config);
-
       xTaskCreate(&elite_display_task, "elite_display_task", 4096,mr_display, 5, NULL);
-return mr_display;
 
+      return mr_display;
 };

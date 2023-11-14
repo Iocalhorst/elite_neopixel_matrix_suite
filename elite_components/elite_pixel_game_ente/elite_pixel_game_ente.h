@@ -119,6 +119,9 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
   }
 
+  for (int i=0;i<self->config.screen_width*self->config.screen_height;i++) {
+    FRAMEBUF_PIXFORMAT c={0.0f,0.0f,0.0f};self->p_framebuf[i]=c;
+  };
   elog("INFO : [elite_pixel_game_construct] allocating p_layer[0]\n");
   vTaskDelay(log_delay / portTICK_PERIOD_MS);
   self->p_layer[0]=(layer_fRGBA*)malloc(sizeof(layer_fRGBA));
@@ -143,6 +146,8 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
       elog("ERROR : [elite_pixel_game_construct] failed to allocate p_layer[0].pixels\n");
       vTaskDelay(log_delay / portTICK_PERIOD_MS);
     };
+      for (int i=0;i<self->config.screen_width*self->config.screen_height;i++) {
+        LAYER_PIXFORMAT c={0.0f,0.0f,0.0f,0.0f};self->p_layer[0]->pixels[i]=c;};
 
     /*self->p_layer[1]->pixels=nullptr;
     self->p_layer[2]->pixels=nullptr;
@@ -385,9 +390,9 @@ bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t *self,int16_t x,int16_t y
     cC.fa=cA.fa+((1.0f-cA.fa)*cB.fa);
   //catch divByZero cases
     if (cC.fa!=0.0f) {
-        cC.fr=((1.0f/cC.fa)*(cA.fa*cA.fr+((1-cA.fa)*(cB.fa*cB.fr))));
-        cC.fg=((1.0f/cC.fa)*(cA.fa*cA.fg+((1-cA.fa)*(cB.fa*cB.fg))));
-        cC.fb=((1.0f/cC.fa)*(cA.fa*cA.fb+((1-cA.fa)*(cB.fa*cB.fb))));
+        cC.fr=((1.0f/cC.fa)*(cA.fa*cA.fr+((1.0f-cA.fa)*(cB.fa*cB.fr))));
+        cC.fg=((1.0f/cC.fa)*(cA.fa*cA.fg+((1.0f-cA.fa)*(cB.fa*cB.fg))));
+        cC.fb=((1.0f/cC.fa)*(cA.fa*cA.fb+((1.0f-cA.fa)*(cB.fa*cB.fb))));
     }else {
         if (cA.fa==0.0f) {
             cC=cB;
@@ -651,7 +656,7 @@ void elite_pixel_game_task(void* params){
     elite_pixel_game_update(p_pixel_game,p_pixel_game->fElapsedTime);
     //TODO factor out display output function calls to some more appropriate place ...
 
-    //vTaskDelay(20/ portTICK_PERIOD_MS);
+    vTaskDelay(5/ portTICK_PERIOD_MS);
     //pixelapp_runtime_ms+=20;
     if (elite_kill_pixel_game==true) break;
   };

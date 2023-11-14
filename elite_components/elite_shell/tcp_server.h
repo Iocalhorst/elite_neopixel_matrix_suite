@@ -26,44 +26,43 @@
 //static const char *TAG = "tcp_server";
 
 static void handle_socket(const int sock){
-  elite_shell_t *mr_shell=elite_shell_construct();
-  mr_shell->outfd=sock;
+    elite_shell_t *mr_shell=elite_shell_construct();
+    mr_shell->outfd=sock;
     int len;
     char rx_buffer[128];
-
     do {
-      elite_shell_send_prompt(mr_shell,sock,0);
+        elite_shell_send_prompt(mr_shell,sock,0);
         len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
         if (len < 0) {
             //ESP_LOGE(TAG, "Error occurred during receiving: errno %d", errno);#
             elog("ERROR : [tcp_server] Error occured during receiving\n");
             vTaskDelay(log_delay/ portTICK_PERIOD_MS);
-        } else if (len == 0) {
-            //ESP_LOGW(TAG, "Connection closed");
-            elog("INFO : [tcp_server] Connection closed\n");
-            vTaskDelay(log_delay/ portTICK_PERIOD_MS);
-        } else {
-            rx_buffer[len] = 0; // Null-terminate whatever is received and treat it like a string
-            //ESP_LOGI(TAG, "Received %d bytes: %s", len, rx_buffer);
-            char log_str[256]={0};
-            sprintf(log_str,"INFO : [tcp_server] Received %d bytes: %s\n", len, rx_buffer);
-            elog(log_str);
-            vTaskDelay(log_delay / portTICK_PERIOD_MS);
-
-            // send() can return less bytes than supplied length.
-            // Walk-around for robust implementation.
-            //int to_write = len;
-            //while (to_write > 0) {
-
-                if (elite_shell_handle_input(sock,rx_buffer, len,0)==false){
+        }else {
+            if (len == 0) {
+                //ESP_LOGW(TAG, "Connection closed");
+                elog("INFO : [tcp_server] Connection closed\n");
+                vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+            }else {
+                rx_buffer[len] = 0; // Null-terminate whatever is received and treat it like a string
+                //ESP_LOGI(TAG, "Received %d bytes: %s", len, rx_buffer);
+                char log_str[256]={0};
+                sprintf(log_str,"INFO : [tcp_server] Received %d bytes: %s\n", len, rx_buffer);
+                elog(log_str);
+                vTaskDelay(log_delay / portTICK_PERIOD_MS);
+                // send() can return less bytes than supplied length.
+                // Walk-around for robust implementation.
+                //int to_write = len;
+                //while (to_write > 0) {
+                if (elite_shell_handle_input(mr_shell,sock,rx_buffer, len,0)==false){
                     elog("INFO: [tcp_server] Closing socket due to receive error or exit command\n");
-                    // Failed to retransmit, giving up
+                    vTaskDelay(log_delay/ portTICK_PERIOD_MS);
                     return;
-                }
-                else {elog("INFO : [tcp_server_handle_socket] mr_shell returned true\n");};
-                //to_write -= written;
-            //}
-        }
+                }else {
+                    elog("INFO : [tcp_server_handle_socket] mr_shell returned true\n");
+                    vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+                };
+            }
+        };
     } while (len > 0);
 }
 
