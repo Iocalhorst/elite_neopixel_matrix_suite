@@ -14,8 +14,6 @@ TODO :
   finalize multiple layer implementation
   draw_string();
   draw_circle()
-  draw_filled_circle()
-  draw_line()
   draw_rectangle()
   draw_filled_rectangle()
   draw_shaded_circle()
