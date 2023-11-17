@@ -196,9 +196,11 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
       elog("ERROR : [elite_pixel_game_construct] on_user_construct returned NULL. casted to (void*) and registered anyway... see?!\n");
       vTaskDelay(log_delay / portTICK_PERIOD_MS);
     };
-    elog("INFO : [elite_pixel_game_construct] registering generic renderer\n");
+  /*  elog("INFO : [elite_pixel_game_construct] registering generic renderer\n");
     vTaskDelay(log_delay / portTICK_PERIOD_MS);
     self->render=&elite_pixel_game_render_to_framebuf;
+
+
     if (self->render!=NULL){
        elog("INFO : [elite_pixel_game_construct] generic renderer registered successfully\n");
        vTaskDelay(log_delay / portTICK_PERIOD_MS);
@@ -207,6 +209,8 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
       elog("ERROR : [elite_pixel_game_construct] failed to register generic renderer\n");
       vTaskDelay(log_delay / portTICK_PERIOD_MS);
     };
+*/
+
     if (self->user!=NULL) {
       self->init_ok=true;
     }else {
@@ -420,45 +424,6 @@ bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t *self,int16_t x,int16_t y
 
     return true;
 };
-
-/*bool elite_pixel_game_putpixel(elite_pixel_game_t* self,int16_t x,int16_t y,sRGB col){
-    sfRGB fcol;
-    fcol.fr=(float)col.r;
-    fcol.fg=(float)col.g;
-    fcol.fb=(float)col.b;
-    elite_pixel_game_fputpixel(self,x,y,fcol);
-    return true;
-};
-*/
-//bool elite_pixel_game_fill_layer_entered_log=false;
-//bool elite_pixel_game_fill_layer_leaving_log=false;
-
-/*bool elite_pixel_game_fill_layer(elite_pixel_game_t *self,sRGBA fill_col){
-
-//tracing pre
-if (elite_pixel_game_fill_layer_entered_log==false) {
-      elite_pixel_game_fill_layer_entered_log=true;
-      elog("INFO : [elite_pixel_game_fill_layer] entered elite_pixel_game_fill_layer - this notification will only occur once\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
-    };
-
-//body
-  for (int y=0;y<self->config.screen_height;y++){
-    for (int x=0;x<self->config.screen_width;x++){
-          elite_pixel_game_putpixelRGBA(self,x,y,fill_col);
-    };
-  };
-
-//tracing post
-if (elite_pixel_game_fill_flayerRGBA_leaving_log==false) {
-      elite_pixel_game_fill_flayerRGBA_leaving_log=true;
-      elog("INFO : [elite_pixel_game_fill_layerRGBA] leaving elite_pixel_game_fill_flayerRGBA - this notification will only occur once\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
-    };
-
-  return true;
-}
-*/
 
 bool elite_pixel_game_fill_flayerRGBA_entered_log=false;
 bool elite_pixel_game_fill_flayerRGBA_leaving_log=false;

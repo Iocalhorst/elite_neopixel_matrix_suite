@@ -11,6 +11,8 @@
 #include "elite_pixel_app_template.h"
 #include "elite_tetris.h"
 #include "line_of_sight_demo.h"
+#include "elite_pinball.h"
+#include "elite_snake.h"
 #include "elite.h"
 
 #pragma once
@@ -93,6 +95,8 @@ bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, siz
   if (cmd==0&&!strcmp(buf,"gamma up\n\0"))cmd=15;
   if (cmd==0&&!strcmp(buf,"gamma down\n\0"))cmd=16;
   if (cmd==0&&!strcmp(buf,"line\n\0"))cmd=17;
+  if (cmd==0&&!strcmp(buf,"pinball\n\0"))cmd=18;
+  if (cmd==0&&!strcmp(buf,"snake\n\0"))cmd=19;
 
   if (cmd>0) self->last_cmd=cmd;
   char* wtf_str="wtf?\n";
@@ -111,6 +115,7 @@ bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, siz
     case 3 : {
       if(elite_theres_a_pixel_game_running==true&&elite_kill_pixel_game==false){
         elite_kill_pixel_game=true;
+        vTaskDelay(3000/portTICK_PERIOD_MS);
       };
       break;
     };
@@ -188,6 +193,18 @@ bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, siz
           line_of_sight_demo_start_task();
       };
       break;
+    };
+    case 18 : {
+      if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false){
+          elite_pinball_start_task();
+      };
+      break;
+    };
+    case 19 : {
+        if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false){
+            elite_snake_start_task();
+        };
+        break;
     };
     default : {
       send(outfd,wtf_str,strlen(wtf_str),flags);

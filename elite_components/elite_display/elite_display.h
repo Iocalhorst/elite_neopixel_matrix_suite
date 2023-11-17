@@ -5,6 +5,7 @@
 #include "elite.h"
 #include "elite_pixel_formats.h"
 #include "elite_led_driver.h"
+#include "elite_display_settings_presets.h"
 #include "elite_pixel_game_ente.h"
 #include "freertos/stream_buffer.h"
 #include "math.h"
@@ -57,7 +58,7 @@ int yx2led[][10]={
 
 typedef struct{
    float brightness;
-   float gamma_correction;
+   float fgamma;
    float color_correction_r;
    float color_correction_g;
    float color_correction_b;
@@ -83,6 +84,9 @@ void elite_display_apply_color_correction(elite_display_t* self);
 void elite_display_apply_brightness(elite_display_t* self);
 void elite_display_apply_gamma_correction(elite_display_t* self);
 void elite_display_prepare_output_framebuf(elite_display_t* self);
+void elite_display_load_parameter_set(elite_display_t* self,display_settings_t* settings);
+void elite_display_set_named_parameter(elite_display_t* self,const char* name,float value);
+
 
 void elite_display_prepare_output_framebuf(elite_display_t* self);
 void elite_display_task(void* pv_params);
@@ -98,7 +102,7 @@ elite_display_t* elite_display_construct(elite_display_config_t *conf){
     self->conf.color_correction_g=conf->color_correction_g;
     self->conf.color_correction_b=conf->color_correction_b;
     self->conf.brightness=conf->brightness;
-    self->conf.gamma_correction=conf->gamma_correction;
+    self->conf.fgamma=conf->fgamma;
     self->conf.fps=conf->fps;
     self->p_input_framebuf_size=sizeof(INPUT_FRAMEBUF_PIXFORMAT)*self->conf.height*self->conf.width;
     self->p_input_framebuf=malloc(self->p_input_framebuf_size);
@@ -175,9 +179,9 @@ void elite_display_apply_gamma_correction(elite_display_t* self){
 
     for (size_t i=0;i<self->conf.height*self->conf.width;i++) {
         INPUT_FRAMEBUF_PIXFORMAT c=self->p_input_framebuf[i];
-        c.fr=255.0f*pow(c.fr/255.0f,self->conf.gamma_correction);
-        c.fg=255.0f*pow(c.fg/255.0f,self->conf.gamma_correction);
-        c.fb=255.0f*pow(c.fb/255.0f,self->conf.gamma_correction);
+        c.fr=255.0f*pow(c.fr/255.0f,self->conf.fgamma);
+        c.fg=255.0f*pow(c.fg/255.0f,self->conf.fgamma);
+        c.fb=255.0f*pow(c.fb/255.0f,self->conf.fgamma);
         if (c.fr<=0.0f) c.fr=0.0f;
         if (c.fg<=0.0f) c.fg=0.0f;
         if (c.fb<=0.0f) c.fb=0.0f;
@@ -202,7 +206,7 @@ void elite_display_prepare_output_framebuf(elite_display_t* self){
 
 void elite_display_print_settings(elite_display_t* p_display){
     char log_str[128]={0};
-    sprintf(log_str,"INFO : [elite_display_] brightness : %f gamma: %f\n",p_display->conf.brightness,p_display->conf.gamma_correction);
+    sprintf(log_str,"INFO : [elite_display_] brightness : %f gamma: %f\n",p_display->conf.brightness,p_display->conf.fgamma);
     elog(log_str);
     vTaskDelay(log_delay/portTICK_PERIOD_MS);
 };
@@ -242,17 +246,17 @@ void elite_display_brightness_up(elite_display_t* self){
 
 
 void elite_display_gamma_up(elite_display_t* self){
-    self->conf.gamma_correction+=0.01f;
-    if (self->conf.gamma_correction>=2.0f) {
-        self->conf.gamma_correction=2.0f;
+    self->conf.fgamma+=0.01f;
+    if (self->conf.fgamma>=2.0f) {
+        self->conf.fgamma=2.0f;
     };
     elite_display_print_settings(self);
 };
 
 void elite_display_gamma_down(elite_display_t* self){
-    self->conf.gamma_correction-=0.01f;
-    if (self->conf.gamma_correction<=0.1f) {
-        self->conf.gamma_correction=0.1f;
+    self->conf.fgamma-=0.01f;
+    if (self->conf.fgamma<=0.1f) {
+        self->conf.fgamma=0.1f;
     };
     elite_display_print_settings(self);
 };
@@ -260,11 +264,11 @@ void elite_display_gamma_down(elite_display_t* self){
 elite_display_t* elite_display_create_default(){
 
       elite_display_config_t elite_display_config={
-            .brightness=0.2f,
-            .gamma_correction=0.75f,
-            .color_correction_r=1.0f,
-            .color_correction_g=1.0f,
-            .color_correction_b=1.0f,
+            .brightness=display_settings_default_mid.brightness,
+            .fgamma=display_settings_default_mid.fgamma,
+            .color_correction_r=display_settings_default_mid.col_correction_coeffs[0],
+            .color_correction_g=display_settings_default_mid.col_correction_coeffs[1],
+            .color_correction_b=display_settings_default_mid.col_correction_coeffs[2],
             .height=30,
             .width=10,
             .fps=24

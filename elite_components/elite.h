@@ -36,7 +36,7 @@
 #endif
 
 
-static const int log_delay=25;
+static const int log_delay=100;
 esp_vfs_littlefs_conf_t conf = {
     .base_path = "/littlefs",
     .partition_label = "littlefs",
