@@ -1,7 +1,15 @@
 # elite_neopixel_matrix_suite
 esp-idf(5.1+) based gfx engine for fast led-matrix game/animation development + example applications 
 
-very early stage. display size is 10x30 pixels - hardcoded. if you want to give it a try or customize feel free  : 
+
+
+Its at a very early stage. And I'm learning this stuff along the way. Please take that into account.
+
+Right now Display size is 10x30 pixels - hardcoded. if you want to give it a try or customize feel free  : 
+
+Of course it can play snake, tetris and run a pixelart slideshow. I hacked a shadowcasting demo as well. And im working on some sort of paint application.... 
+You will need an esp32 board. If you dont have enough blinking lights ... you should do something about it. In the meantime you can work around it by utilizing the streaming capability. 
+It throws the raw rgb888 pixels at you via udp if you "startudp" in the cli. Ill put the client/viewer-code up here soon. 
 
 clone the repo
 
