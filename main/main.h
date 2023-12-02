@@ -1,4 +1,5 @@
 #include "elite.h"
+#include "elite_io.h"
 //#include "tsoding.h"
 #pragma once
 //void main_start_pixel_game_task();

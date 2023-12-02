@@ -40,8 +40,8 @@ elite_pinball_t* elite_pinball_construct(elite_pixel_game_t* ente){
 
   elite_pinball_t *self=malloc(sizeof(elite_pinball_t));
   if (self==NULL) {
-    elog("ERROR : [elite_pinball_construct] failed to allocated self(elite_pinball_t); returning NULL from constructor\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("ERROR : [elite_pinball_construct] failed to allocated self(elite_pinball_t); returning NULL from constructor\n");
+
     return NULL;
   };
   self->app_name="elite_pinball";//unused
@@ -92,8 +92,8 @@ bool elite_pinball_on_user_update(void* params,elite_pixel_game_t *ente,float fE
 //debug tracing in
     if (elite_pinball_on_user_update_entered_log==false) {
         elite_pinball_on_user_update_entered_log=true;
-        elog("INFO : [elite_pinball_update] entered elite_pinball_update() - this notification will only occur once\n");
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("INFO : [elite_pinball_update] entered elite_pinball_update() - this notification will only occur once\n");
+
         };
 //body
   elite_pinball_t *self=(elite_pinball_t*)params;
@@ -106,8 +106,8 @@ bool elite_pinball_on_user_update(void* params,elite_pixel_game_t *ente,float fE
 //debug tracing out
   if (elite_pinball_on_user_update_leaving_log==false) {
       elite_pinball_on_user_update_leaving_log=true;
-      elog("INFO : [elite_pinball_on_user_update] leaving elite_pinball_on_user_update() - this notification will only occur once\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("INFO : [elite_pinball_on_user_update] leaving elite_pinball_on_user_update() - this notification will only occur once\n");
+
     };
 
   return true;
@@ -117,23 +117,23 @@ bool elite_pinball_on_user_update(void* params,elite_pixel_game_t *ente,float fE
 
 bool elite_pinball_on_user_destroy(void* params){
 
-    elog("INFO : [elite_pinball_on_user_update] entering elite_pinball_on_user_destroy()\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [elite_pinball_on_user_update] entering elite_pinball_on_user_destroy()\n");
+
     elite_pinball_t *self=(elite_pinball_t*)params;
-    elog("INFO : [elite_pinball_on_user_update] deallocating self(elite_pinball)\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [elite_pinball_on_user_update] deallocating self(elite_pinball)\n");
+
 
     if (self!=NULL) {
         free(self);
-        elog("INFO : [elite_pinball_on_user_update] successfully deallocated self(elite_pinball)\n");
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("INFO : [elite_pinball_on_user_update] successfully deallocated self(elite_pinball)\n");
+
     }else {
-        elog("ERROR : [elite_pinball_on_user_update] failed to deallocated self(elite_pinball); returning false from elite_pinball_on_user_destroy()\n");
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("ERROR : [elite_pinball_on_user_update] failed to deallocated self(elite_pinball); returning false from elite_pinball_on_user_destroy()\n");
+
         return false;
     };
-    elog("INFO : [elite_pinball_on_user_update] returning true from template_on_user_destroy()\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [elite_pinball_on_user_update] returning true from template_on_user_destroy()\n");
+
   return true;
 
 };
@@ -142,10 +142,10 @@ bool elite_pinball_on_user_destroy(void* params){
 
 void elite_pinball_start_task(){
 
-    elog("INFO : [elite_pinball_start_pixel_game_task] entered elite_pinball_start_pixelapp_task\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
-    elog("INFO : [elite_pinball_start_pixel_game_task] creating &pixel_game_task\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [elite_pinball_start_pixel_game_task] entered elite_pinball_start_pixelapp_task\n");
+
+    ELOG("INFO : [elite_pinball_start_pixel_game_task] creating &pixel_game_task\n");
+
     elite_pixel_game_config_t pixel_game_config={
         .app_name="elite_pinball",
         .screen_width=10,
@@ -155,7 +155,7 @@ void elite_pinball_start_task(){
         .on_user_destroy=&elite_pinball_on_user_destroy
     };
     xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 4096,&pixel_game_config, 5, NULL);
-    elog("INFO : [elite_pinball_start_pixelapp_task] leaving elite_pinball_start_pixelapp_task\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [elite_pinball_start_pixelapp_task] leaving elite_pinball_start_pixelapp_task\n");
+
 
 };

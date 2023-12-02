@@ -127,16 +127,16 @@ void line_of_sight_demo_cast_illumination_map(line_of_sight_demo_t* self,light_s
 line_of_sight_demo_t* line_of_sight_demo_construct(elite_pixel_game_t* ente){
   line_of_sight_demo_t *self=malloc(sizeof(line_of_sight_demo_t));
   if (self!=NULL) {
-    elog("INFO : [line_of_sight_demo_construct] successfully allocated self(line_of_sight_demo_t)\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [line_of_sight_demo_construct] successfully allocated self(line_of_sight_demo_t)\n");
+
   }else {
-    elog("ERROR : [line_of_sight_demo_construct] failed to allocated self(line_of_sight_demo_t); returning NULL from constructor\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("ERROR : [line_of_sight_demo_construct] failed to allocated self(line_of_sight_demo_t); returning NULL from constructor\n");
+
     return NULL;
   };
   self->app_name="line_of_sight_demo";//unused
-  elog("INFO : [line_of_sight_demo_construct] successfully constructed self(line_of_sight_demo_t); returning self from constructor\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [line_of_sight_demo_construct] successfully constructed self(line_of_sight_demo_t); returning self from constructor\n");
+
   sfRGBA c={255.0f,172.0f,142.0f,255.0f};
   float f_bla=0.55f;
   //sfRGBA c2={172.0f*f_bla,112.0f*f_bla,42.0f*f_bla,172.0f};
@@ -193,8 +193,8 @@ bool line_of_sight_demo_on_user_update(void* params,elite_pixel_game_t *ente,flo
 //debug tracing in
     if (line_of_sight_demo_on_user_update_entered_log==false) {
         line_of_sight_demo_on_user_update_entered_log=true;
-        elog("INFO : [line_of_sight_demo_update] entered line_of_sight_demo_update() - this notification will only occur once\n");
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("INFO : [line_of_sight_demo_update] entered line_of_sight_demo_update() - this notification will only occur once\n");
+
         };
 //body
 
@@ -291,8 +291,8 @@ bool line_of_sight_demo_on_user_update(void* params,elite_pixel_game_t *ente,flo
     }
     if (line_of_sight_demo_on_user_update_leaving_log==false) {
         line_of_sight_demo_on_user_update_leaving_log=true;
-        elog("INFO : [line_of_sight_demo_on_user_update] leaving line_of_sight_demo_on_user_update() - this notification will only occur once\n");
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("INFO : [line_of_sight_demo_on_user_update] leaving line_of_sight_demo_on_user_update() - this notification will only occur once\n");
+
     };
 
     return true;
@@ -339,23 +339,23 @@ bool line_of_sight_demo_on_user_update(void* params,elite_pixel_game_t *ente,flo
 
 bool line_of_sight_demo_on_user_destroy(void* params){
 
-    elog("INFO : [line_of_sight_demo_on_user_update] entering line_of_sight_demo_on_user_destroy()\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [line_of_sight_demo_on_user_update] entering line_of_sight_demo_on_user_destroy()\n");
+
     line_of_sight_demo_t *self=(line_of_sight_demo_t*)params;
-    elog("INFO : [line_of_sight_demo_on_user_update] deallocating self(line_of_sight_demo)\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [line_of_sight_demo_on_user_update] deallocating self(line_of_sight_demo)\n");
+
 
     if (self!=NULL) {
         free(self);
-        elog("INFO : [line_of_sight_demo_on_user_update] successfully deallocated self(line_of_sight_demo)\n");
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("INFO : [line_of_sight_demo_on_user_update] successfully deallocated self(line_of_sight_demo)\n");
+
     }else {
-        elog("ERROR : [line_of_sight_demo_on_user_update] failed to deallocated self(line_of_sight_demo); returning false from line_of_sight_demo_on_user_destroy()\n");
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("ERROR : [line_of_sight_demo_on_user_update] failed to deallocated self(line_of_sight_demo); returning false from line_of_sight_demo_on_user_destroy()\n");
+
         return false;
     };
-    elog("INFO : [line_of_sight_demo_on_user_update] returning true from template_on_user_destroy()\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [line_of_sight_demo_on_user_update] returning true from template_on_user_destroy()\n");
+
   return true;
 
 };
@@ -364,10 +364,10 @@ bool line_of_sight_demo_on_user_destroy(void* params){
 
 void line_of_sight_demo_start_task(){
 
-    elog("INFO : [line_of_sight_demo_start_pixel_game_task] entered line_of_sight_demo_start_pixelapp_task\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
-    elog("INFO : [line_of_sight_demo_start_pixel_game_task] creating &pixel_game_task\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [line_of_sight_demo_start_pixel_game_task] entered line_of_sight_demo_start_pixelapp_task\n");
+
+    ELOG("INFO : [line_of_sight_demo_start_pixel_game_task] creating &pixel_game_task\n");
+
     elite_pixel_game_config_t pixel_game_config={
         .app_name="line_of_sight_demo",
         .screen_width=10,
@@ -377,7 +377,7 @@ void line_of_sight_demo_start_task(){
         .on_user_destroy=&line_of_sight_demo_on_user_destroy
     };
     xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 4096,&pixel_game_config, 5, NULL);
-    elog("INFO : [line_of_sight_demo_start_pixelapp_task] leaving line_of_sight_demo_start_pixelapp_task\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [line_of_sight_demo_start_pixelapp_task] leaving line_of_sight_demo_start_pixelapp_task\n");
+
 
 };

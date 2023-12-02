@@ -35,9 +35,14 @@
 #include "spi_flash_mmap.h"
 #endif
 
+#define ELOG(...) do {char str[512]={0};sprintf(str,__VA_ARGS__);el0g(str);}while(0)
+#define NEVERMIND(X) do {(void)X;}while(0)
+SemaphoreHandle_t xHighlander;
+TaskHandle_t p_elite_logger_task_handle;
 
-static const int log_delay=100;
-esp_vfs_littlefs_conf_t conf = {
+static const int log_delay=0;
+
+esp_vfs_littlefs_conf_t esp_vfs_littlefs_conf = {
     .base_path = "/littlefs",
     .partition_label = "littlefs",
     .format_if_mount_failed = true,
@@ -60,14 +65,14 @@ void elite_swapf(float *a, float*b)
 
 
 bool eliteAssert(bool ok,const char* msg);
-TaskHandle_t p_elite_logger_task_handle;
+
 
 static EventGroupHandle_t s_wifi_event_group;
 static int s_retry_num = 0;
 static size_t global_log_buffer_size=1024;
 static char* global_log_buffer=NULL;
 
-static void elog(const char* s);
+static void el0g(const char* s);
 
 
 static void elite_wifi_event_handler(void* arg, esp_event_base_t event_base,
@@ -172,6 +177,11 @@ typedef struct {
 } elite_logger_task_params_t;
 
 
+
+
+
+
+
 static void elite_logger_task(void* args){
   (void)args;
   elite_logger_task_params_t p_my_params;
@@ -197,13 +207,16 @@ static void elite_logger_task(void* args){
   char* tx_buf=(char*)malloc(max_tx_buf);
   memset(tx_buf,0,max_tx_buf);
   bool elite_logger_exit_condition=false;
-  SemaphoreHandle_t xSemaphore = xSemaphoreCreateMutex();
+
+
 
 
 
   while (!elite_logger_exit_condition) {
+//if (xHighlander!=NULL) xSemaphoreGive(xHighlander);
+  //  xSemaphoreGive(xHighlander);
       if (xTaskNotifyWait(0, 0, &ulNotificationValue, portMAX_DELAY)) {
-             if( xSemaphoreTake( xSemaphore, ( TickType_t ) 10 ) == pdTRUE )
+
         switch(ulNotificationValue){
             case 0 : {
               elite_logger_exit_condition=true;
@@ -215,18 +228,18 @@ static void elite_logger_task(void* args){
               send(sock,tx_buf,tx_len,0);
               memset(tx_buf,0,max_tx_buf);
               ulNotificationValue=0;
+              global_log_buffer[0]=0;
             };
         };
 
-      xSemaphoreGive( xSemaphore );
     };
   };
   free(tx_buf);
   if (sock != -1) {
 
 
-      elog("INFO : [main] Shutting down log_socket\n");
-          vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("INFO : [main] Shutting down log_socket\n");
+
       ESP_LOGE(TAG, "Shutting down log_socket\n");
       shutdown(sock, 0);
       close(sock);
@@ -238,21 +251,29 @@ static void elite_logger_task(void* args){
 
 
 
-void elog(const char* s){
+void el0g(const char* s){
 
 
+//if (xHighlander==NULL) return;
+//if (xHighlander==NULL) return;
+  xSemaphoreTake( xHighlander,5000/portTICK_PERIOD_MS);
+  {
 //        size_t *ps=(char)malloc(strlen(s);
-configASSERT(global_log_buffer);
-size_t i;
-memset(global_log_buffer,0,global_log_buffer_size);
-for (i=0;((i<strlen(s))&&(i<global_log_buffer_size-1));i++) {global_log_buffer[i]=s[i];};
-global_log_buffer[i]=0;//not sure if thats needed but it wont hurt. it could hurt otherwise though
-xTaskNotify(p_elite_logger_task_handle,i,3);//3==eSetValueWithOverwrite
-
+        configASSERT(global_log_buffer);
+        size_t i;
+        memset(global_log_buffer,0,global_log_buffer_size);
+        for (i=0;((i<strlen(s))&&(i<global_log_buffer_size-1));i++) {global_log_buffer[i]=s[i];};
+        global_log_buffer[i]=0;//not sure if thats needed but it wont hurt. it could hurt otherwise though
+        xTaskNotify(p_elite_logger_task_handle,i,3);//3==eSetValueWithOverwrite
+    };
+    for (;;){
+      if (global_log_buffer[0]==0) break;
+    };
+    xSemaphoreGive(xHighlander);
 };
 
 bool eliteAssert(bool ok,const char* msg){
-  if (!ok) {elog(msg);};
+  if (!ok) {ELOG(msg);};
   return !ok;
 };
 
@@ -260,59 +281,59 @@ bool eliteAssert(bool ok,const char* msg){
 
 
 bool elite_init_littlefs(){
-  char log_str[256]={0};
-  esp_err_t ret = esp_vfs_littlefs_register(&conf);
+
+  esp_err_t ret = esp_vfs_littlefs_register(&esp_vfs_littlefs_conf);
   if (ret==ESP_OK) return true;
   if (ret != ESP_OK) {
           if (ret == ESP_FAIL)
           {
-                  elog("ERROR : [elite_init_littlefs] Failed to mount or format filesystem\n");
+                  ELOG("ERROR : [elite_init_littlefs] Failed to mount or format filesystem\n");
           }
           else if (ret == ESP_ERR_NOT_FOUND)
           {
-                  elog("ERROR : [elite_init_littlefs] Failed to find LittleFS partition\n");
+                  ELOG("ERROR : [elite_init_littlefs] Failed to find LittleFS partition\n");
           }
           else
           {
-                  elog("ERROR : [elite_init_littlefs] Failed to initialize LittleFS\n");
+                  ELOG("ERROR : [elite_init_littlefs] Failed to initialize LittleFS\n");
           }
           return false;
   }
-  sprintf(log_str,"INFO : [elite_init_littlefs] mounted partition <%s> at <%s>\n",conf.partition_label,conf.base_path);
-  elog(log_str);
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_init_littlefs] mounted partition <%s> at <%s>\n",esp_vfs_littlefs_conf.partition_label,esp_vfs_littlefs_conf.base_path);
+
+
   return true;
 };
 void elite_test_little_fs(){
   size_t total = 0, used = 0;int ret;
-  ret = esp_littlefs_info(conf.partition_label, &total, &used);
+  ret = esp_littlefs_info(esp_vfs_littlefs_conf.partition_label, &total, &used);
   if (ret != ESP_OK)
   {
     //  ESP_LOGE(TAG, "Failed to get LittleFS partition information (%s)", esp_err_to_name(ret));
-      elog("ERROR : [elite_test_little_fs] Failed to get LittleFS partition information\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("ERROR : [elite_test_little_fs] Failed to get LittleFS partition information\n");
+
   }
           else
           {
-            char log_str[512]={0};
-            sprintf(log_str,"INFO : [elite_test_little_fs] Partition size: total: %d, used: %d\n", total, used);
-            elog(log_str);
-            vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+            ELOG("INFO : [elite_test_little_fs] Partition size: total: %d, used: %d\n", total, used);
+
+
           }
 
           // Use POSIX and C standard library functions to work with files.
           // First create a file.
-          elog("INFO : [elite_test_little_fs] Opening file\n");
+          ELOG("INFO : [elite_test_little_fs] Opening file\n");
           FILE *f = fopen("/littlefs/hello.txt", "w");
           if (f == NULL)
           {
-                  elog("ERROR :[elite_test_little_fs] Failed to open file for writing\n");
+                  ELOG("ERROR :[elite_test_little_fs] Failed to open file for writing\n");
                   return;
           }
           fprintf(f, "Hier koennte ihre Werbung stehen!\n");
           fclose(f);
-          elog("INFO : [elite_test_little_fs] File written\n");
-          vTaskDelay(log_delay / portTICK_PERIOD_MS);
+          ELOG("INFO : [elite_test_little_fs] File written\n");
+
 
           // Check if destination file exists before renaming
           struct stat st;
@@ -323,23 +344,23 @@ void elite_test_little_fs(){
           }
 
           // Rename original file
-          elog("INFO : [elite_test_little_fs] Renaming file\n");
-          vTaskDelay(log_delay / portTICK_PERIOD_MS);
+          ELOG("INFO : [elite_test_little_fs] Renaming file\n");
+
           if (rename("/littlefs/hello.txt", "/littlefs/foo.txt") != 0)
           {
-                  elog("ERROR : [elite_test_little_fs] Rename failed\n");
-                  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+                  ELOG("ERROR : [elite_test_little_fs] Rename failed\n");
+
                   return;
           }
 
           // Open renamed file for reading
-          elog("INFO : [elite_test_little_fs] Reading file\n");
-          vTaskDelay(log_delay / portTICK_PERIOD_MS);
+          ELOG("INFO : [elite_test_little_fs] Reading file\n");
+
           f = fopen("/littlefs/foo.txt", "r");
           if (f == NULL)
           {
-                  elog("ERROR : [elite_test_little_fs] Failed to open file for reading\n");
-                  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+                  ELOG("ERROR : [elite_test_little_fs] Failed to open file for reading\n");
+
                   return;
           }
 
@@ -355,12 +376,12 @@ void elite_test_little_fs(){
                   *pos = '\0';
           }
 
-          char log_str2[512];
-          sprintf(log_str2,"INFO : [elite_test_little_fs] Read from file : %s\n", line);
-          elog(log_str2);
-          vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
-          /*elog("INFO : [elite_test_little_fs] Reading from flashed filesystem example.txt");
+          ELOG("INFO : [elite_test_little_fs] Read from file : %s\n", line);
+
+
+
+          /*ELOG("INFO : [elite_test_little_fs] Reading from flashed filesystem example.txt");
           f = fopen("/littlefs/example.txt", "r");
           if (f == NULL)
           {
@@ -430,7 +451,7 @@ static esp_err_t favicon_get_handler(httpd_req_t *req)
  * string other than '/', since SPIFFS doesn't support directories */
 static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath)
 {
-    char log_str[512]={0};
+
     char entrypath[FILE_PATH_MAX];
     char entrysize[16];
     const char *entrytype;
@@ -445,9 +466,9 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath)
     strlcpy(entrypath, dirpath, sizeof(entrypath));
 
     if (!dir) {
-        sprintf(log_str,"ERROR :[http_resp_dir_html] Failed to stat dir : %s\n", dirpath);
-        elog(log_str);
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("ERROR :[http_resp_dir_html] Failed to stat dir : %s\n", dirpath);
+
+
 
         /* Respond with 404 Not Found */
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Directory does not exist");
@@ -479,14 +500,14 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath)
         strlcpy(entrypath + dirpath_len, entry->d_name, sizeof(entrypath) - dirpath_len);
         if (stat(entrypath, &entry_stat) == -1) {
 
-            sprintf(log_str,"ERROR :[http_resp_dir_html] Failed to stat %s : %s\n", entrytype, entry->d_name);
-            elog(log_str);
+            ELOG("ERROR :[http_resp_dir_html] Failed to stat %s : %s\n", entrytype, entry->d_name);
+
             continue;
         }
         sprintf(entrysize, "%ld", entry_stat.st_size);
-        sprintf(log_str,"INFO :[http_resp_dir_html] Found %s : %s (%s bytes)\n", entrytype, entry->d_name, entrysize);
-        elog(log_str);
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("INFO :[http_resp_dir_html] Found %s : %s (%s bytes)\n", entrytype, entry->d_name, entrysize);
+
+
         /* Send chunk of HTML file containing table entries with file name and size */
         httpd_resp_sendstr_chunk(req, "<tr><td><a href=\"");
         httpd_resp_sendstr_chunk(req, req->uri);
@@ -540,7 +561,7 @@ static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filena
     return httpd_resp_set_type(req, "text/plain");
 }
 
-/* Copies the full path into destination buffer and returns
+/* Copies the full path into destination bufferINFO : [elite_pixel_game_fputpixel] entered elite_pixel_game_fputpixel() - this notification will only occur once\n and returns
  * pointer to path (skipping the preceding base path) */
 static const char* get_path_from_uri(char *dest, const char *base_path, const char *uri, size_t destsize)
 {
@@ -571,7 +592,7 @@ static const char* get_path_from_uri(char *dest, const char *base_path, const ch
 
 /* Handler to download a file kept on the server */
 static esp_err_t download_get_handler(httpd_req_t *req)
-{   char log_str[256]={0};
+{
     char filepath[FILE_PATH_MAX];
     FILE *fd = NULL;
     struct stat file_stat;
@@ -579,8 +600,8 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     const char *filename = get_path_from_uri(filepath, ((struct file_server_data *)req->user_ctx)->base_path,
                                              req->uri, sizeof(filepath));
     if (!filename) {
-        elog("ERROR : [download_get_handler] Filename is too long\n");
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("ERROR : [download_get_handler] Filename is too long\n");
+
         /* Respond with 500 Internal Server Error */
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Filename too long");
         return ESP_FAIL;
@@ -599,9 +620,9 @@ static esp_err_t download_get_handler(httpd_req_t *req)
         } else if (strcmp(filename, "/favicon.ico") == 0) {
             return favicon_get_handler(req);
         }
-        sprintf(log_str,"ERROR : [download_get_handler] Failed to stat file : %s\n", filepath);
-        elog(log_str);
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("ERROR : [download_get_handler] Failed to stat file : %s\n", filepath);
+
+
         /* Respond with 404 Not Found */
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File does not exist");
         return ESP_FAIL;
@@ -609,17 +630,17 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 
     fd = fopen(filepath, "r");
     if (!fd) {
-        sprintf(log_str,"ERROR : [download_get_handler] Failed to read existing file : %s\n", filepath);
-        elog(log_str);
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("ERROR : [download_get_handler] Failed to read existing file : %s\n", filepath);
+
+
         /* Respond with 500 Internal Server Error */
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to read existing file");
         return ESP_FAIL;
     }
 
-    sprintf(log_str,"INFO : [download_get_handler] Sending file : %s (%ld bytes)\n", filename, file_stat.st_size);
-    elog(log_str);
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [download_get_handler] Sending file : %s (%ld bytes)\n", filename, file_stat.st_size);
+
+
 
     set_content_type_from_file(req, filename);
 
@@ -634,8 +655,8 @@ static esp_err_t download_get_handler(httpd_req_t *req)
             /* Send the buffer contents as HTTP response chunk */
             if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
                 fclose(fd);
-                elog("ERROR : [download_get_handler] File sending failed!\n");
-                vTaskDelay(log_delay / portTICK_PERIOD_MS);
+                ELOG("ERROR : [download_get_handler] File sending failed!\n");
+
                 /* Abort sending file */
                 httpd_resp_sendstr_chunk(req, NULL);
                 /* Respond with 500 Internal Server Error */
@@ -649,7 +670,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 
     /* Close file after sending complete */
     fclose(fd);
-    elog("INFO : [download_get_handler] File sending complete\n");
+    ELOG("INFO : [download_get_handler] File sending complete\n");
 
     /* Respond with an empty chunk to signal HTTP response completion */
 #ifdef CONFIG_EXAMPLE_HTTPD_CONN_CLOSE_HEADER
@@ -662,7 +683,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 /* Handler to upload a file onto the server */
 static esp_err_t upload_post_handler(httpd_req_t *req)
 {
-    char log_str[256]={0};
+
     char filepath[FILE_PATH_MAX];
     FILE *fd = NULL;
     struct stat file_stat;
@@ -679,9 +700,9 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
     /* Filename cannot have a trailing '/' */
     if (filename[strlen(filename) - 1] == '/') {
-        sprintf(log_str,"ERROR : [upload_post_handler] Invalid filename : %s\n", filename);
-        elog(log_str);
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("ERROR : [upload_post_handler] Invalid filename : %s\n", filename);
+
+
 
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Invalid filename");
         return ESP_FAIL;
@@ -689,9 +710,9 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
     if (stat(filepath, &file_stat) == 0) {
 
-        sprintf(log_str,"ERROR : [upload_post_handler] File already exists : %s\n", filepath);
-        elog(log_str);
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("ERROR : [upload_post_handler] File already exists : %s\n", filepath);
+
+
 
         /* Respond with 400 Bad Request */
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "File already exists");
@@ -701,9 +722,9 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     /* File cannot be larger than a limit */
     if (req->content_len > MAX_FILE_SIZE) {
 
-        sprintf(log_str,"ERROR : [upload_post_handler] File too large : %d bytes\n", req->content_len);
-        elog(log_str);
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("ERROR : [upload_post_handler] File too large : %d bytes\n", req->content_len);
+
+
 
         /* Respond with 400 Bad Request */
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
@@ -716,9 +737,9 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
     fd = fopen(filepath, "w");
     if (!fd) {
-      sprintf(log_str,"ERROR : [upload_post_handler] Failed to create file : %s\n", filepath);
-      elog(log_str);
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("ERROR : [upload_post_handler] Failed to create file : %s\n", filepath);
+
+
 
         /* Respond with 500 Internal Server Error */
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to create file");
@@ -726,9 +747,9 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     }
 
 
-    sprintf(log_str,"INFO : [upload_post_handler] Receiving file : %s\n", filename);
-    elog(log_str);
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [upload_post_handler] Receiving file : %s\n", filename);
+
+
 
 
     /* Retrieve the pointer to scratch buffer for temporary storage */
@@ -754,8 +775,8 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
             fclose(fd);
             unlink(filepath);
 
-            elog("ERROR : [upload_post_handler] File reception failed!\n");
-            vTaskDelay(log_delay / portTICK_PERIOD_MS);
+            ELOG("ERROR : [upload_post_handler] File reception failed!\n");
+
 
 
             /* Respond with 500 Internal Server Error */
@@ -769,8 +790,8 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
              * Storage may be full? */
             fclose(fd);
             unlink(filepath);
-            elog("ERROR [upload_post_handler] File write failed!\n");
-            vTaskDelay(log_delay / portTICK_PERIOD_MS);
+            ELOG("ERROR [upload_post_handler] File write failed!\n");
+
             /* Respond with 500 Internal Server Error */
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to write file to storage");
             return ESP_FAIL;
@@ -783,8 +804,8 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
     /* Close file upon upload completion */
     fclose(fd);
-    elog("ERROR [upload_post_handler] File reception complete\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("ERROR [upload_post_handler] File reception complete\n");
+
 
     /* Redirect onto root to see the updated file list */
     httpd_resp_set_status(req, "303 See Other");
@@ -799,7 +820,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 /* Handler to delete a file from the server */
 static esp_err_t delete_post_handler(httpd_req_t *req)
 {
-    char log_str[256]={0};
+
     char filepath[FILE_PATH_MAX];
     struct stat file_stat;
 
@@ -815,26 +836,26 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
 
     /* Filename cannot have a trailing '/' */
     if (filename[strlen(filename) - 1] == '/') {
-        sprintf(log_str,"ERROR : [delete_post_handler] Invalid filename : %s\n", filename);
-        elog(log_str);
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("ERROR : [delete_post_handler] Invalid filename : %s\n", filename);
+
+
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Invalid filename");
         return ESP_FAIL;
     }
 
     if (stat(filepath, &file_stat) == -1) {
-        sprintf(log_str,"ERROR : [delete_post_handler] File does not exist : %s\n", filename);
-        elog(log_str);
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("ERROR : [delete_post_handler] File does not exist : %s\n", filename);
+
+
         /* Respond with 400 Bad Request */
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "File does not exist");
         return ESP_FAIL;
     }
 
 
-    sprintf(log_str,"INFO : [delete_post_handler] Deleting file : %s\n", filename);
-    elog(log_str);
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [delete_post_handler] Deleting file : %s\n", filename);
+
+
 
     /* Delete file */
     unlink(filepath);
@@ -855,14 +876,14 @@ esp_err_t elite_start_file_server(const char *base_path)
     static struct file_server_data *server_data = NULL;
 
     if (server_data) {
-        elog("ERROR : [elite_start_file_server] File server already started\n");
+        ELOG("ERROR : [elite_start_file_server] File server already started\n");
         return ESP_ERR_INVALID_STATE;
     }
 
     /* Allocate memory for server data */
     server_data = calloc(1, sizeof(struct file_server_data));
     if (!server_data) {
-        elog("ERROR [elite_start_file_server] Failed to allocate memory for server data\n");
+        ELOG("ERROR [elite_start_file_server] Failed to allocate memory for server data\n");
         return ESP_ERR_NO_MEM;
     }
     strlcpy(server_data->base_path, base_path,
@@ -876,12 +897,12 @@ esp_err_t elite_start_file_server(const char *base_path)
      * target URIs which match the wildcard scheme */
     config.uri_match_fn = httpd_uri_match_wildcard;
 
-    char log_str[256]={0};
-    sprintf(log_str,"INFO : [start_file_server ] Starting HTTP Server on port: '%d'\n", config.server_port);
-    elog(log_str);
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+    ELOG("INFO : [start_file_server ] Starting HTTP Server on port: '%d'\n", config.server_port);
+
+
     if (httpd_start(&server, &config) != ESP_OK) {
-        elog("ERROR : [elite_start_file_server] Failed to start file server!\n");
+        ELOG("ERROR : [elite_start_file_server] Failed to start file server!\n");
         return ESP_FAIL;
     }
 

@@ -48,7 +48,7 @@ static void main_eye_task1(void* args){
     int random_delay=minimum_eyes_delay+esp_random()%maximum_eyes_add_delay;
       while (true) {
         vTaskDelay(random_delay / portTICK_PERIOD_MS);
-        //elog("blink\n");
+        //ELOG("blink\n");
         monsters[0].eyes_direction=monsters_get_new_eye_direction(monsters[0].eyes_direction);
 
         random_delay=minimum_eyes_delay+esp_random()%maximum_eyes_add_delay;
@@ -59,7 +59,7 @@ static void main_eye_task2(void* args){
     int random_delay=minimum_eyes_delay+esp_random()%maximum_eyes_add_delay;
       while (true) {
         vTaskDelay(random_delay / portTICK_PERIOD_MS);
-        //elog("blink\n");
+        //ELOG("blink\n");
         monsters[1].eyes_direction=monsters_get_new_eye_direction(monsters[1].eyes_direction);
         random_delay=minimum_eyes_delay+esp_random()%maximum_eyes_add_delay;
       };
@@ -69,7 +69,7 @@ static void main_eye_task3(void* args){
     int random_delay=minimum_eyes_delay+esp_random()%maximum_eyes_add_delay;
       while (true) {
         vTaskDelay(random_delay / portTICK_PERIOD_MS);
-        //elog("blink\n");
+        //ELOG("blink\n");
         monsters[2].eyes_direction=monsters_get_new_eye_direction(monsters[2].eyes_direction);
         random_delay=minimum_eyes_delay+esp_random()%maximum_eyes_add_delay;
       };
@@ -178,28 +178,28 @@ void main_simple_ota_task(void *pvParameter)
     esp_https_ota_config_t ota_config = {
         .http_config = &config,
     };
-    char log_str[128]={0};
-    sprintf(log_str,"INFO : [main_simple_ota_task] Attempting to download update from %s\n",config.url);
-    elog(log_str);
+
+  ELOG("INFO : [main_simple_ota_task] Attempting to download update from %s\n",config.url);
+
     ESP_LOGI(TAG, "Attempting to download update from %s", config.url);
     esp_err_t ret = esp_https_ota(&ota_config);
     if (ret == ESP_OK) {
         ESP_LOGI(TAG, "OTA Succeed, Rebooting...");
-        elog("INFO : [main_simple_ota_task] OTA Firmware updated succeeded, rebooting...\n");
+        ELOG("INFO : [main_simple_ota_task] OTA Firmware updated succeeded, rebooting...\n");
         main_reboot();
         //vTaskDelay(5000 / portTICK_PERIOD_MS);
         //esp_restart();
     } else {
         ESP_LOGE(TAG, "Firmware upgrade failed");
-        elog("ERROR : [main_simple_ota_task] Firmware upgrade failed\n");
+        ELOG("ERROR : [main_simple_ota_task] Firmware upgrade failed\n");
     }
 
 while(ota_timer>0){
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     ota_timer-=1000;
   };
-  elog("INFO : [main_simple_ota_task] stopping main_simple_ota_task \n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [main_simple_ota_task] stopping main_simple_ota_task \n");
+
 ota_has_stopped=true;
 vTaskDelete(NULL);
 
@@ -220,7 +220,7 @@ void main_timer_log_task(void *pvParameter){
     accumulated_fElapsedTime+=fElapsedTime;
     char time_str[256]={0};
     sprintf(time_str,"INFO : [main_timer_log_task] time=%f\n",accumulated_fElapsedTime);
-    elog(time_str);
+    ELOG(time_str);
     vTaskDelay(15000 / portTICK_PERIOD_MS);
   };
 };
@@ -228,66 +228,66 @@ void main_timer_log_task(void *pvParameter){
 
 
 void main_start_ota_task(){
-  elog("INFO : [main_start_ota_task] entered main_start_ota_task\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [main_start_ota_task] entered main_start_ota_task\n");
 
-  elog("INFO : [main_start_ota_task] creating &simple_ota task\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+  ELOG("INFO : [main_start_ota_task] creating &simple_ota task\n");
+
   xTaskCreate(&main_simple_ota_task, "main_simple_ota_task", 8192, NULL, 5, NULL);
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  elog("INFO : [main_start_ota_task] leaving main_start_ota_task\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+  ELOG("INFO : [main_start_ota_task] leaving main_start_ota_task\n");
+
 
 };
 
 
 void main_start_eyes_tasks(){
-  elog("INFO : [main_start_eyes_task] entered main_start_eyes_tasks\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  elog("INFO : [main_start_eyes_task] starting eyes_task1\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [main_start_eyes_task] entered main_start_eyes_tasks\n");
+
+  ELOG("INFO : [main_start_eyes_task] starting eyes_task1\n");
+
   xTaskCreate(&main_eye_task1, "eye_task1", 4096, NULL, 5, NULL);
-  elog("INFO : [main_start_eyes_task] starting eyes_task2\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [main_start_eyes_task] starting eyes_task2\n");
+
   xTaskCreate(&main_eye_task2, "eye_task2", 4096, NULL, 5, NULL);
-  elog("INFO : [main_start_eyes_task] starting eyes_task3\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [main_start_eyes_task] starting eyes_task3\n");
+
   xTaskCreate(&main_eye_task3, "eye_task3", 4096, NULL, 5, NULL);
-  elog("INFO : [main_start_eyes_task] starting timer_log_task\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [main_start_eyes_task] starting timer_log_task\n");
+
   xTaskCreate(&main_timer_log_task, "timer_log_task", 4096, NULL, 5, NULL);
-  elog("INFO : [main_start_eyes_task] leaving main_start_eyes_tasks\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [main_start_eyes_task] leaving main_start_eyes_tasks\n");
+
 };
 
 
 void main_reboot(){
 
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  elog("INFO : [main] rebooting in 5\n");
+
+  ELOG("INFO : [main] rebooting in 5\n");
   ESP_LOGI(TAG, "5");
   vTaskDelay(1000 / portTICK_PERIOD_MS);
-  elog("INFO : [main] rebooting in 4\n");
+  ELOG("INFO : [main] rebooting in 4\n");
   ESP_LOGI(TAG, "4");
   vTaskDelay(1000 / portTICK_PERIOD_MS);
-  elog("INFO : [main] rebooting in 3\n");
+  ELOG("INFO : [main] rebooting in 3\n");
   ESP_LOGI(TAG, "3");
   vTaskDelay(1000 / portTICK_PERIOD_MS);
-  elog("INFO : [main] rebooting in 2\n");
+  ELOG("INFO : [main] rebooting in 2\n");
   ESP_LOGI(TAG, "2");
   vTaskDelay(1000 / portTICK_PERIOD_MS);
-  elog("INFO : [main] rebooting in 1\n");
+  ELOG("INFO : [main] rebooting in 1\n");
   ESP_LOGI(TAG, "1");
   vTaskDelay(500 / portTICK_PERIOD_MS);
-  elog("INFO : [main] Don't forget to like, share and subscribe!\n");
+  ELOG("INFO : [main] Don't forget to like, share and subscribe!\n");
   vTaskDelay(500 / portTICK_PERIOD_MS);
   ESP_LOGI(TAG, "rebooting in 0");
   vTaskDelay(500 / portTICK_PERIOD_MS);
   //just for good measure
   free(global_log_buffer);
-  esp_vfs_littlefs_unregister(conf.partition_label);
-  elog("INFO : [main_reboot] LittleFS unmounted\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  esp_vfs_littlefs_unregister(esp_vfs_littlefs_conf.partition_label);
+  ELOG("INFO : [main_reboot] LittleFS unmounted\n");
+
   esp_restart();
 };
 
@@ -295,6 +295,7 @@ void main_reboot(){
 
 
 void app_main(void){
+  xHighlander=xSemaphoreCreateMutex();
 
     elite_init_nvs();
     elite_init_wifi();
@@ -307,6 +308,7 @@ void app_main(void){
 
     led_strip = configure_led_spi();
 
+    //xSemaphoreTake(xHighlander,portMAX_DELAY);
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
 
     elite_logger_task_params_t elite_logger_task_params={
@@ -315,49 +317,51 @@ void app_main(void){
 
 
     xTaskCreate(elite_logger_task, "elite_logger_task", 4096, &elite_logger_task_params, 5, &p_elite_logger_task_handle);
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
-    elog("\n------------hello again-------------\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
-    elog("INFO : Hier koennte ihre werbung stehen\n");
+
+    ELOG("\n------------hello again-------------\n");
+
+    ELOG("INFO : Hier koennte ihre werbung stehen\n");
     main_start_ota_task();
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
     main_start_eyes_tasks();
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
     xTaskCreate(tcp_server_task, "tcp_server", 4096*2, (void*)AF_INET, 5, NULL);
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
 
 
     if (!elite_init_littlefs()){
-    elog("ERROR : [main] Could not initialize LittleFS\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  }else {elog("INFO : [main] initialized LittleFS\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);}
+    ELOG("ERROR : [main] Could not initialize LittleFS\n");
+
+  }else {ELOG("INFO : [main] initialized LittleFS\n");
+  }
     //const char* base_path = "/data";
 
-    //elog("DEBUG : [main] waiting for ota task to stop\n");
+    //ELOG("DEBUG : [main] waiting for ota task to stop\n");
     //while (ota_has_stopped==false) {
         //vTaskDelay(1000 / portTICK_PERIOD_MS);
 
 //    };
-    elog("DEBUG : [main] waiting 5s before trying to setup mr_display\n");
+    ELOG("DEBUG : [main] waiting 5s before trying to setup mr_display\n");
     vTaskDelay(5000 / portTICK_PERIOD_MS);
 
 
     mr_displays_global_handle=elite_display_create_default();
 
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
     bool main_exit_condition=false;
-    elog("INFO : [main] starting main monster loop\n");
+    ELOG("INFO : [main] starting main monster loop\n");
 
 
     while (main_exit_condition!=true) {              //xTaskNotify(p_elite_logger_task_handle,TEST_LOG_CMD,3);//3==eSetValueWithOverwrite
 
         if (!elite_theres_a_pixel_game_running) {
+              xSemaphoreTake(displaySemaphore,portMAX_DELAY);
               main_clear_display(mr_displays_global_handle);
               main_draw_background(mr_displays_global_handle);
               main_draw_monsters(mr_displays_global_handle);
-              vTaskDelay(20 / portTICK_PERIOD_MS);
+              elite_mouse_draw_cursor();
+              xSemaphoreGive(displaySemaphore);
+              vTaskDelay(20/portTICK_PERIOD_MS);
         };
     };
 

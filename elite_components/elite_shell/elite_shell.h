@@ -13,7 +13,9 @@
 #include "line_of_sight_demo.h"
 #include "elite_pinball.h"
 #include "elite_snake.h"
+#include "elite_io.h"
 #include "elite.h"
+
 
 #pragma once
 
@@ -97,6 +99,10 @@ bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, siz
   if (cmd==0&&!strcmp(buf,"line\n\0"))cmd=17;
   if (cmd==0&&!strcmp(buf,"pinball\n\0"))cmd=18;
   if (cmd==0&&!strcmp(buf,"snake\n\0"))cmd=19;
+  if (cmd==0&&!strcmp(buf,"startudp\n\0"))cmd=20;
+  if (cmd==0&&!strcmp(buf,"stopudp\n\0"))cmd=21;
+  if (cmd==0&&!strcmp(buf,"mouse\n\0"))cmd=22;
+  if (cmd==0&&!strcmp(buf,"test\n\0"))cmd=42;
 
   if (cmd>0) self->last_cmd=cmd;
   char* wtf_str="wtf?\n";
@@ -134,8 +140,8 @@ bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, siz
     case 8 : {
         for (int i=0;i<NUM_URLS;i++){
           get_sprite(i);
-          elog("DEBUG : [elite_shell_handle_input] get_sprite() returned");
-          vTaskDelay(log_delay / portTICK_PERIOD_MS);
+          ELOG("DEBUG : [elite_shell_handle_input] get_sprite() returned");
+
         };
         break;
     };
@@ -153,7 +159,7 @@ bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, siz
     };
     case 11 : {
         if(elite_theres_a_pixel_game_running==true&&elite_kill_pixel_game==false){
-          elog("DEBUG : [elite_shell_handle_input] setting sum_flag\n");
+          ELOG("DEBUG : [elite_shell_handle_input] setting sum_flag\n");
             sum_flag=true;
         };
         break;
@@ -205,6 +211,28 @@ bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, siz
             elite_snake_start_task();
         };
         break;
+    };
+    case 20 : {
+        if(mr_displays_global_handle!=NULL){
+            elite_display_udp_start(mr_displays_global_handle);
+        };
+        break;
+    };
+    case 21 : {
+        if(mr_displays_global_handle!=NULL){
+            elite_display_udp_stop(mr_displays_global_handle);
+        };
+        break;
+    };
+    case 22 : {
+//      if (mr_mouse_global_handle!=NULL) free(mr_mouse_global_handle);
+      elite_mouse_create_default();
+      break;
+    };
+    case 42 : {
+//      if (mr_mouse_global_handle!=NULL) free(mr_mouse_global_handle);
+      ELOG("TEST\n");
+      break;
     };
     default : {
       send(outfd,wtf_str,strlen(wtf_str),flags);

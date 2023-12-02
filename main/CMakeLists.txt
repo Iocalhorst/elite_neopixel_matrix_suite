@@ -1,5 +1,6 @@
 idf_component_register(SRCS "main.c" INCLUDE_DIRS "."
                 "../elite_components"
+                "../elite_components/elite_io"
                 "../elite_components/elite_display"
                 "../elite_components/elite_shell"
                 "../elite_components/elite_pixel_game_ente"
@@ -10,5 +11,5 @@ idf_component_register(SRCS "main.c" INCLUDE_DIRS "."
                 "../elite_components/elite_pixel_applications/elite_tetris"
                 "../elite_components/elite_pixel_applications/line_of_sight_demo"
                 "../elite_components/elite_pixel_applications/elite_pinball"
-                "../elite_components/elite_pixel_applications/elite_snake"
+                "../elite_components/elite_pixel_applications/elite_snake"                
                     EMBED_FILES "favicon.ico" "upload_script.html")

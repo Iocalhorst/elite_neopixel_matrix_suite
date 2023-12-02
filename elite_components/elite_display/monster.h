@@ -49,7 +49,7 @@ static int monsters_get_new_eye_direction(int old_direction){
       //to prevent single eye movement because it just looks stupid;
       int new_dir=esp_random()%6;
       int old_dir=old_direction;
-      //elog("getting new eye_dir\n");
+      //ELOG("getting new eye_dir\n");
       if (old_dir==DOWN_LEFT) {
           for (;;) {
             if ((new_dir==DOWN_RIGHT)||(new_dir==UP_LEFT)||(new_dir==UP_CENTER)||(new_dir==UP_RIGHT)) {break;}
@@ -91,7 +91,7 @@ static int monsters_get_new_eye_direction(int old_direction){
                                             else {new_dir+=1;new_dir%=6;};
                                           };
                                         };
-                                        //elog("returning new eye_dir\n");
+                                        //ELOG("returning new eye_dir\n");
                                           return new_dir;
 
                                       };

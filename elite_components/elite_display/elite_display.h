@@ -16,7 +16,7 @@
 
 StreamBufferHandle_t mr_displays_global_inputstream_handle;
 
-
+SemaphoreHandle_t displaySemaphore;
 led_strip_handle_t led_strip;
 
 int yx2led[][10]={
@@ -71,15 +71,28 @@ typedef struct{
     elite_display_config_t conf;
     INPUT_FRAMEBUF_PIXFORMAT* p_input_framebuf;
     size_t p_input_framebuf_size;
+    INPUT_FRAMEBUF_PIXFORMAT* p_tmp_framebuf;
+    size_t p_tmp_framebuf_size;
     OUTPUT_PIXFORMAT output_framebuf[300];
+    int udp_state;
 }elite_display_t;
+
+#define UDP_UNINITIALIZED 0
+#define UDP_START 1
+#define UDP_SOCK_RDY 2
+#define UDP_SOCK_FAIL 3
+#define UDP_CONN_OK 4
+#define UDP_CONN_FAIL 5
+#define UDP_STOP 6
+#define UDP_RUNNING 42
+#define UDP_SEND_FAIL 69
+
 
 elite_display_t *mr_displays_global_handle;
 
 elite_display_t* elite_display_construct(elite_display_config_t* conf);
 void elite_display_update_leds(elite_display_t* self);
 void elite_display_putpixelRGB8(elite_display_t* self,int x,int y,OUTPUT_PIXFORMAT c);
-void elite_display_fetch_framebuf(elite_display_t* self);
 void elite_display_apply_color_correction(elite_display_t* self);
 void elite_display_apply_brightness(elite_display_t* self);
 void elite_display_apply_gamma_correction(elite_display_t* self);
@@ -115,7 +128,7 @@ elite_display_t* elite_display_construct(elite_display_config_t *conf){
     };
 
     mr_displays_global_inputstream_handle=xStreamBufferCreate(self->p_input_framebuf_size,self->p_input_framebuf_size);
-
+    if (displaySemaphore==NULL) displaySemaphore=xSemaphoreCreateMutex();
     return self;
 };
 
@@ -147,16 +160,6 @@ void elite_display_update_leds(elite_display_t* self){
 
     ESP_ERROR_CHECK(led_strip_refresh(led_strip));
 };
-
-void elite_display_fetch_framebuf(elite_display_t* self){
-
-    xStreamBufferReceive(mr_displays_global_inputstream_handle,
-                         self->p_input_framebuf,
-                         self->p_input_framebuf_size,
-                         portMAX_DELAY);
-
-};
-
 
 void elite_display_apply_color_correction(elite_display_t* self){
     for (size_t i=0;i<self->conf.height*self->conf.width;i++) {
@@ -205,27 +208,111 @@ void elite_display_prepare_output_framebuf(elite_display_t* self){
 };
 
 void elite_display_print_settings(elite_display_t* p_display){
-    char log_str[128]={0};
-    sprintf(log_str,"INFO : [elite_display_] brightness : %f gamma: %f\n",p_display->conf.brightness,p_display->conf.fgamma);
-    elog(log_str);
-    vTaskDelay(log_delay/portTICK_PERIOD_MS);
+
+    ELOG("INFO : [elite_display_] brightness : %f gamma: %f\n",p_display->conf.brightness,p_display->conf.fgamma);
+
+
+};
+
+int num_frame=0;
+bool elite_display_send_output_framebuf_udp(elite_display_t* self,int sockfd){
+  //char tmp[16]={0};
+//  sprintf(tmp,"num_frame=%i\n",num_frame);
+  //int r=send(sockfd,tmp,16,0);
+//  if (r<16) {return false;};
+//  num_frame++;
+//  return true;*/
+  int r=send(sockfd,self->output_framebuf,900,0);
+  if (r!=900) return false;
+  return true;
+};
+
+void elite_display_udp_start(elite_display_t *self){
+  self->udp_state=UDP_START;
+};
+
+void elite_display_udp_stop(elite_display_t *self){
+  self->udp_state=UDP_STOP;
 };
 
 void elite_display_task(void* pv_params){
     elite_display_t* self=(elite_display_t*)pv_params;
 
     elite_display_print_settings(self);
+int sockfd=-1;
+self->udp_state=UDP_UNINITIALIZED;
+struct sockaddr_in udp_display_addr;
+memset(&udp_display_addr, 0, sizeof(udp_display_addr));
+udp_display_addr.sin_len = sizeof(udp_display_addr);
+udp_display_addr.sin_family = AF_INET;
+udp_display_addr.sin_port = PP_HTONS(9003);
+udp_display_addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
+
     while (true) {
         if (elite_theres_a_pixel_game_running==true) {
             xStreamBufferReceive(mr_displays_global_inputstream_handle,self->p_input_framebuf,self->p_input_framebuf_size,5000/portTICK_PERIOD_MS);
         };
+
+
             //    elite_display_apply_color_correction(self);
+        if (self->udp_state==UDP_START) {
+          ELOG("DEBUG : [elite_display_task] udp_start\n");
+
+            sockfd = lwip_socket(AF_INET, SOCK_DGRAM, 0);
+            if (sockfd<0) {
+              self->udp_state=UDP_SOCK_FAIL;
+              ELOG("ERROR : [elite_display_task] lwip_socket() fail\n");
+
+              }
+            else {
+              ELOG("DEBUG : [elite_display_task] lwip_socket() success\n");
+
+              self->udp_state=UDP_SOCK_RDY;
+            };
+        };
+        if (self->udp_state==UDP_SOCK_RDY){
+            if (lwip_connect(sockfd, (struct sockaddr*)&udp_display_addr, sizeof(udp_display_addr))==0) {
+                self->udp_state=UDP_CONN_OK;
+                ELOG("DEBUG : [elite_display_task] sockfd connect() success\n");
+
+                ELOG("DEBUG : [elite_display_task] udp_running\n");
+
+            }else{
+                ELOG("DEBUG : [elite_display_task] sockfd connect() fail\n");
+
+                self->udp_state=UDP_CONN_FAIL;
+            };
+        };
+        if (self->udp_state==UDP_CONN_OK) {
+            self->udp_state=UDP_RUNNING;
+            ELOG("DEBUG : [elite_display_task] udp_state==running\n");
+
+        };
+
+
+        xSemaphoreTake(displaySemaphore,portMAX_DELAY);
+
+        if (self->udp_state==UDP_RUNNING) {
+            elite_display_prepare_output_framebuf(self);
+            if (elite_display_send_output_framebuf_udp(self,sockfd)!=true) {
+                self->udp_state=UDP_SEND_FAIL;
+                ELOG("ERROR : [elite_display_task] udp_send_fail\n");
+
+            };
+        };
+
+// Todo: implement subcontext for different framebuffer output pipelines.
+
+
         elite_display_apply_brightness(self);
         elite_display_apply_gamma_correction(self);
         elite_display_prepare_output_framebuf(self);
+
         elite_display_update_leds(self);
+        xSemaphoreGive(displaySemaphore);
         vTaskDelay(5/portTICK_PERIOD_MS);
     };
+    vTaskDelete(NULL);
 };
 
 void elite_display_brightness_down(elite_display_t* self){

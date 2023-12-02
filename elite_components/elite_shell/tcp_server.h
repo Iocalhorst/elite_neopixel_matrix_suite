@@ -35,31 +35,31 @@ static void handle_socket(const int sock){
         len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
         if (len < 0) {
             //ESP_LOGE(TAG, "Error occurred during receiving: errno %d", errno);#
-            elog("ERROR : [tcp_server] Error occured during receiving\n");
-            vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+            ELOG("ERROR : [tcp_server] Error occured during receiving\n");
+
         }else {
             if (len == 0) {
                 //ESP_LOGW(TAG, "Connection closed");
-                elog("INFO : [tcp_server] Connection closed\n");
-                vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+                ELOG("INFO : [tcp_server] Connection closed\n");
+
             }else {
                 rx_buffer[len] = 0; // Null-terminate whatever is received and treat it like a string
                 //ESP_LOGI(TAG, "Received %d bytes: %s", len, rx_buffer);
-                char log_str[256]={0};
-                sprintf(log_str,"INFO : [tcp_server] Received %d bytes: %s\n", len, rx_buffer);
-                elog(log_str);
-                vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+                ELOG("INFO : [tcp_server] Received %d bytes: %s\n", len, rx_buffer);
+
+
                 // send() can return less bytes than supplied length.
                 // Walk-around for robust implementation.
                 //int to_write = len;
                 //while (to_write > 0) {
                 if (elite_shell_handle_input(mr_shell,sock,rx_buffer, len,0)==false){
-                    elog("INFO: [tcp_server] Closing socket due to receive error or exit command\n");
-                    vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+                    ELOG("INFO: [tcp_server] Closing socket due to receive error or exit command\n");
+
                     return;
                 }else {
-                    elog("INFO : [tcp_server_handle_socket] mr_shell returned true\n");
-                    vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+                    ELOG("INFO : [tcp_server_handle_socket] mr_shell returned true\n");
+
                 };
             }
         };
@@ -87,40 +87,40 @@ static void tcp_server_task(void *pvParameters)
 
     int listen_sock = socket(addr_family, SOCK_STREAM, ip_protocol);
     if (listen_sock < 0) {
-        elog("ERROR : [tcp_server] Unable to create socket\n");
-        vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+        ELOG("ERROR : [tcp_server] Unable to create socket\n");
+
         vTaskDelete(NULL);
         return;
     }
     int opt = 1;
     setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-    elog("INFO : [tcp_server] socket created\n");
-    vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+    ELOG("INFO : [tcp_server] socket created\n");
+
     //ESP_LOGI(TAG, "Socket created");
 
     int err = bind(listen_sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
     if (err != 0) {
-        elog("ERROR : [tcp_server] Socket unable to bind.\n");
-        vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+        ELOG("ERROR : [tcp_server] Socket unable to bind.\n");
+
 
         //ESP_LOGE(TAG, "IPPROTO: %d", addr_family);
         goto CLEAN_UP;
     }
-    elog("INFO : [tcp_server] Socket bound to port 9002\n");
-    vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+    ELOG("INFO : [tcp_server] Socket bound to port 9002\n");
+
 
     err = listen(listen_sock, 1);
     if (err != 0) {
         //ESP_LOGE(TAG, "Error occurred during listen: errno %d", errno);
-        elog("ERROR : [tcp_server] Error occurred during listen\n");
-        vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+        ELOG("ERROR : [tcp_server] Error occurred during listen\n");
+
         goto CLEAN_UP;
     }
 
     while (1) {
-        elog("INFO : [tcp_server] Socket listening\n");
-        vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+        ELOG("INFO : [tcp_server] Socket listening\n");
+
 
     //    ESP_LOGI(TAG, "Socket listening");
 
@@ -129,8 +129,8 @@ static void tcp_server_task(void *pvParameters)
         int sock = accept(listen_sock, (struct sockaddr *)&source_addr, &addr_len);
         if (sock < 0) {
 //            ESP_LOGE(TAG, "Unable to accept connection: errno %d", errno);
-            elog("ERROR : [tcp_server] Unable to accept connection\n");
-            vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+            ELOG("ERROR : [tcp_server] Unable to accept connection\n");
+
 
             break;
         }
@@ -148,14 +148,14 @@ static void tcp_server_task(void *pvParameters)
         }
 
 //        ESP_LOGI(TAG, "Socket accepted ip address: %s", addr_str);
-        char log_str[256]={0};
-        sprintf(log_str,"INFO : [tcp_server] Socket accepted connection from %s\n",addr_str);
-        elog(log_str);
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
 
-      //elog("INFO : [tcp_server] Socket accepted connection");
+        ELOG("INFO : [tcp_server] Socket accepted connection from %s\n",addr_str);
 
-      //  vTaskDelay(log_delay/ portTICK_PERIOD_MS);
+
+
+      //ELOG("INFO : [tcp_server] Socket accepted connection");
+
+      //
 
 
         handle_socket(sock);

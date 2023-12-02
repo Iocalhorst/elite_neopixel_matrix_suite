@@ -82,69 +82,69 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
 //we need to check for valid configuration
 //we need to check for conflicts since elite_pixel_game_t should be kind of a Singleton ... i guess
   //  if (config==NULL) return NULL;
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  elog("INFO : [elite_pixel_game_construct] entering elite_pixel_game_construct(&config)\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  char log_str[512]={0};
-  sprintf(log_str,"INFO : [elite_pixel_game_construct] config={app_name=\"%s\", screen_width=%i, screen_height=%i }\n",config.app_name,config.screen_width,config.screen_height);
-  elog(log_str);
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+  ELOG("INFO : [elite_pixel_game_construct] entering elite_pixel_game_construct(&config)\n");
+
+
+  ELOG("INFO : [elite_pixel_game_construct] config={app_name=\"%s\", screen_width=%i, screen_height=%i }\n",config.app_name,config.screen_width,config.screen_height);
+
+
 
   elite_pixel_game_t* self=(elite_pixel_game_t*)malloc(sizeof(elite_pixel_game_t));
   if (self!=NULL) {
-      elog("INFO : [elite_pixel_game_construct] successfully allocated pixelapp memory\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("INFO : [elite_pixel_game_construct] successfully allocated pixelapp memory\n");
+
     }else{
-      elog("ERROR : [elite_pixel_game_construct] failed to allocate pixelapp memory\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("ERROR : [elite_pixel_game_construct] failed to allocate pixelapp memory\n");
+
       return NULL;
     };
   self->config=config;
   self->screen_height=0;//we dont know yet if the user config parameters will hold up
   self->screen_width=0;
   self->target_layer=-1;
-  elog("INFO : [elite_pixel_game_construct] configuration set\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_pixel_game_construct] configuration set\n");
+
 
     self->p_framebuf_size=0;//uninitialized variables suck.
     self->p_framebuf=(FRAMEBUF_PIXFORMAT*)malloc(self->config.screen_width*self->config.screen_height*sizeof(FRAMEBUF_PIXFORMAT));
 
   if (self->p_framebuf!=NULL) {
-    elog("INFO : [elite_pixel_game_construct] p_framebuf allocated\n");
+    ELOG("INFO : [elite_pixel_game_construct] p_framebuf allocated\n");
     self->p_framebuf_size=self->config.screen_width*self->config.screen_height*sizeof(FRAMEBUF_PIXFORMAT);
 
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
   }else{
-    elog("ERROR : [elite_pixel_game_construct] failed to allocate p_framebuf\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("ERROR : [elite_pixel_game_construct] failed to allocate p_framebuf\n");
+
   }
 
   for (int i=0;i<self->config.screen_width*self->config.screen_height;i++) {
     FRAMEBUF_PIXFORMAT c={0.0f,0.0f,0.0f};self->p_framebuf[i]=c;
   };
-  elog("INFO : [elite_pixel_game_construct] allocating p_layer[0]\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_pixel_game_construct] allocating p_layer[0]\n");
+
   self->p_layer[0]=(layer_fRGBA*)malloc(sizeof(layer_fRGBA));
   if (self->p_layer[0]!=NULL) {
-    elog("INFO : [elite_pixel_game_construct] p_layer[0] allocated\n");
+    ELOG("INFO : [elite_pixel_game_construct] p_layer[0] allocated\n");
     self->target_layer=0;
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
   }else{
-    elog("ERROR : [elite_pixel_game_construct] failed to allocate p_layer[0]\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("ERROR : [elite_pixel_game_construct] failed to allocate p_layer[0]\n");
+
 };
 
     self->p_layer[0]->pixels=(LAYER_PIXFORMAT*)malloc(self->config.screen_width*self->config.screen_height*sizeof(LAYER_PIXFORMAT));
     if (self->p_layer[0]->pixels!=NULL) {
-      elog("INFO : [elite_pixel_game_construct] p_layer[0].pixels allocated\n");
+      ELOG("INFO : [elite_pixel_game_construct] p_layer[0].pixels allocated\n");
       self->num_layers=1;
       self->screen_height=self->config.screen_height;
       self->screen_width=self->config.screen_width;
       self->target_layer=0;
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
     }else{
-      elog("ERROR : [elite_pixel_game_construct] failed to allocate p_layer[0].pixels\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("ERROR : [elite_pixel_game_construct] failed to allocate p_layer[0].pixels\n");
+
     };
       for (int i=0;i<self->config.screen_width*self->config.screen_height;i++) {
         LAYER_PIXFORMAT c={0.0f,0.0f,0.0f,0.0f};self->p_layer[0]->pixels[i]=c;};
@@ -152,62 +152,62 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
     /*self->p_layer[1]->pixels=nullptr;
     self->p_layer[2]->pixels=nullptr;
     self->p_layer[3]->pixels=nullptr;*/
-    elog("INFO : [elite_pixel_game_construct] registering user function pointers\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [elite_pixel_game_construct] registering user function pointers\n");
+
 
     self->on_user_construct=config.on_user_construct;
     if (self->on_user_construct!=NULL){
-      elog("INFO : [elite_pixel_game_construct] &on_user_construct() registered successfully\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("INFO : [elite_pixel_game_construct] &on_user_construct() registered successfully\n");
+
     }else{
-      elog("ERROR : [elite_pixel_game_construct] failed to register &on_user_construct()\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("ERROR : [elite_pixel_game_construct] failed to register &on_user_construct()\n");
+
     };
     self->on_user_update=config.on_user_update;
     if (self->on_user_update!=NULL){
-      elog("INFO : [elite_pixel_game_construct] &on_user_update() registered successfully\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("INFO : [elite_pixel_game_construct] &on_user_update() registered successfully\n");
+
     }else{
-      elog("ERROR : [elite_pixel_game_construct] failed to register &on_user_update()\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("ERROR : [elite_pixel_game_construct] failed to register &on_user_update()\n");
+
     };
     self->on_user_destroy=config.on_user_destroy;
     if (self->on_user_destroy!=NULL){
-      elog("INFO : [elite_pixel_game_construct] &on_user_destroy() registered successfully\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("INFO : [elite_pixel_game_construct] &on_user_destroy() registered successfully\n");
+
     }else{
-      elog("ERROR : [elite_pixel_game_construct] failed to register &on_user_destroy()\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("ERROR : [elite_pixel_game_construct] failed to register &on_user_destroy()\n");
+
     };
     if (self->p_layer[0]!=NULL) {
-      elog("INFO : [elite_pixel_game_construct] p_layer[0] allocated successfully\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("INFO : [elite_pixel_game_construct] p_layer[0] allocated successfully\n");
+
     }else{
-      elog("ERROR : [elite_pixel_game_construct] p_layer[0] allocation failed\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("ERROR : [elite_pixel_game_construct] p_layer[0] allocation failed\n");
+
     }
-    elog("INFO : [elite_pixel_game_construct] calling self->on_user_construct()\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [elite_pixel_game_construct] calling self->on_user_construct()\n");
+
     self->user=(void*)self->on_user_construct(self);
     if (self->user!=NULL) {
-      elog("INFO : [elite_pixel_game_construct] on_user_construct returned instance. registered\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("INFO : [elite_pixel_game_construct] on_user_construct returned instance. registered\n");
+
     }else{
-      elog("ERROR : [elite_pixel_game_construct] on_user_construct returned NULL. casted to (void*) and registered anyway... see?!\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("ERROR : [elite_pixel_game_construct] on_user_construct returned NULL. casted to (void*) and registered anyway... see?!\n");
+
     };
-  /*  elog("INFO : [elite_pixel_game_construct] registering generic renderer\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  /*  ELOG("INFO : [elite_pixel_game_construct] registering generic renderer\n");
+
     self->render=&elite_pixel_game_render_to_framebuf;
 
 
     if (self->render!=NULL){
-       elog("INFO : [elite_pixel_game_construct] generic renderer registered successfully\n");
-       vTaskDelay(log_delay / portTICK_PERIOD_MS);
+       ELOG("INFO : [elite_pixel_game_construct] generic renderer registered successfully\n");
+
      }
     else {
-      elog("ERROR : [elite_pixel_game_construct] failed to register generic renderer\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("ERROR : [elite_pixel_game_construct] failed to register generic renderer\n");
+
     };
 */
 
@@ -227,57 +227,57 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
 
 
 bool elite_pixel_game_destruct(elite_pixel_game_t *self){
-  elog("INFO : [elite_pixel_game_destruct] entering elite_pixel_game_destruct()\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_pixel_game_destruct] entering elite_pixel_game_destruct()\n");
+
 
   if (self==NULL) {
-    elog("ERROR : [elite_pixel_game_destruct] self=NULL, returning false;\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("ERROR : [elite_pixel_game_destruct] self=NULL, returning false;\n");
+
     return false;
   }
 
-  elog("INFO : [elite_pixel_game_destruct] deallocating self->p_framebuf\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_pixel_game_destruct] deallocating self->p_framebuf\n");
+
   if (self->p_framebuf==NULL) {
-  elog("ERROR : [elite_pixel_game_destruct] self->p_framebuf==NULL, returning false;\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("ERROR : [elite_pixel_game_destruct] self->p_framebuf==NULL, returning false;\n");
+
   return false;
   }else{free(self->p_framebuf);
-  elog("INFO : [elite_pixel_game_destruct] successfully deallocated self->p_framebuf\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_pixel_game_destruct] successfully deallocated self->p_framebuf\n");
+
   };
 
-  elog("INFO : [elite_pixel_game_destruct] deallocating self->p_layer[0].pixels\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_pixel_game_destruct] deallocating self->p_layer[0].pixels\n");
+
   if (self->p_layer[0]->pixels==NULL) {
-    elog("ERROR : [elite_pixel_game_destruct] self->layer[0]->pixels==NULL, \n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("ERROR : [elite_pixel_game_destruct] self->layer[0]->pixels==NULL, \n");
+
   //  return false;
   }else {
     free(self->p_layer[0]->pixels);
-    elog("INFO : [elite_pixel_game_destruct] successfully deallocated self->layer[0]->pixels\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [elite_pixel_game_destruct] successfully deallocated self->layer[0]->pixels\n");
+
   };
-  elog("INFO : [elite_pixel_game_destruct] deallocating self->p_layer[0]\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_pixel_game_destruct] deallocating self->p_layer[0]\n");
+
   if (self->p_layer[0]==NULL) {
-    elog("ERROR : [elite_pixel_game_destruct] self->p_layer[0]==NULL \n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("ERROR : [elite_pixel_game_destruct] self->p_layer[0]==NULL \n");
+
   //  return false;
   }else {
     free(self->p_layer[0]);
-    elog("INFO : [elite_pixel_game_destruct] successfully deallocated self->p_layer[0]\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [elite_pixel_game_destruct] successfully deallocated self->p_layer[0]\n");
+
   };
-    elog("INFO : [elite_pixel_game_destruct] calling on_user_destroy()\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [elite_pixel_game_destruct] calling on_user_destroy()\n");
+
     if (self->on_user_destroy(self->user)==false){
-      elog("ERROR : [elite_pixel_game_destruct] user_destroy() returned false\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("ERROR : [elite_pixel_game_destruct] user_destroy() returned false\n");
+
 
     }else {
-      elog("INFO : [elite_pixel_game_destruct] user_destroy() returned true\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("INFO : [elite_pixel_game_destruct] user_destroy() returned true\n");
+
 
     }
     return true;
@@ -357,19 +357,19 @@ bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t *self,int16_t x,int16_t y
   //tracing pre
       if (elite_pixel_game_fputpixelRGBA_entered_log==false) {
           elite_pixel_game_fputpixelRGBA_entered_log=true;
-          elog("INFO : [elite_pixel_game_fputpixel] entered elite_pixel_game_fputpixel() - this notification will only occur once\n");
-          vTaskDelay(log_delay / portTICK_PERIOD_MS);
+          ELOG("INFO : [elite_pixel_game_fputpixel] entered elite_pixel_game_fputpixel() - this notification will only occur once\n");
+
         };
 
     if ((x<0)||(y<0)||(x>=self->screen_width)||(y>=self->screen_height)) {  //dont hurt the canvas
           canvas_hurt_count+=1;
           if (elite_pixel_game_fputpixelRGBA_dont_hurt_the_canvas_log==false) {
               elite_pixel_game_fputpixelRGBA_dont_hurt_the_canvas_log=true;
-              elog("ERROR : [elite_pixel_game_fputpixelRGBA] You've hurt the canvas. You're not supposed to hurt the canvas! - this notification will only occur once\n");
+              ELOG("ERROR : [elite_pixel_game_fputpixelRGBA] You've hurt the canvas. You're not supposed to hurt the canvas! - this notification will only occur once\n");
               char hurt_str2[256]={0};
               sprintf(hurt_str2,"details : \n config.screen_width=%i\n config.screen_height=%i\n x=%i y=%i\n",self->config.screen_width,self->config.screen_height,x,y);
-              elog(hurt_str2);
-              vTaskDelay(log_delay / portTICK_PERIOD_MS);
+              ELOG(hurt_str2);
+
           };
       return false;
     }; //cause you're not supposed to hurt the canvas
@@ -418,8 +418,8 @@ bool elite_pixel_game_fputpixelRGBA(elite_pixel_game_t *self,int16_t x,int16_t y
     //tracing post
     if (elite_pixel_game_fputpixelRGBA_leaving_log==false) {
         elite_pixel_game_fputpixelRGBA_leaving_log=true;
-        elog("INFO : [elite_pixel_game_fputpixelRGBA] leaving elite_pixel_game_fputpixelRGBA() - this notification will only occur once\n");
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("INFO : [elite_pixel_game_fputpixelRGBA] leaving elite_pixel_game_fputpixelRGBA() - this notification will only occur once\n");
+
     };
 
     return true;
@@ -433,8 +433,8 @@ bool elite_pixel_game_fill_flayerRGBA(elite_pixel_game_t *self,sfRGBA fill_fcol)
 //tracing pre
 if (elite_pixel_game_fill_flayerRGBA_entered_log==false) {
     elite_pixel_game_fill_flayerRGBA_entered_log=true;
-    elog("INFO : [elite_pixel_game_fill_flayer] entered elite_pixel_game_fill_flayer - this notification will only occur once\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("INFO : [elite_pixel_game_fill_flayer] entered elite_pixel_game_fill_flayer - this notification will only occur once\n");
+
   };
 
 
@@ -447,8 +447,8 @@ if (elite_pixel_game_fill_flayerRGBA_entered_log==false) {
 //tracing post
 if (elite_pixel_game_fill_flayerRGBA_leaving_log==false) {
       elite_pixel_game_fill_flayerRGBA_leaving_log=true;
-      elog("INFO : [elite_pixel_game_fill_flayerRGBA] leaving elite_pixel_game_fill_flayerRGBA - this notification will only occur once\n");
-      vTaskDelay(log_delay / portTICK_PERIOD_MS);
+      ELOG("INFO : [elite_pixel_game_fill_flayerRGBA] leaving elite_pixel_game_fill_flayerRGBA - this notification will only occur once\n");
+
     };
 
   return true;
@@ -519,22 +519,22 @@ for (int i=0;i<300;i++) {LAYER_PIXFORMAT c={0.0f,0.0f,0.0f,255.0f};self->p_layer
 
 if (on_user_update_pre_log==false) {
   on_user_update_pre_log=true;
-  elog("INFO : [elite_pixel_game_update] calling self->on_user_update() - this notification will only occur once\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_pixel_game_update] calling self->on_user_update() - this notification will only occur once\n");
+
 };
 
 
 on_user_update_result=self->on_user_update(self->user,self,fElapsedTime);
 if (on_user_update_result==true){
     if (on_user_update_post_log==false){
-        elog("INFO : [elite_pixel_game_update] self->on_user_update() returned true - this notification will only occur once\n");
-        vTaskDelay(log_delay / portTICK_PERIOD_MS);
+        ELOG("INFO : [elite_pixel_game_update] self->on_user_update() returned true - this notification will only occur once\n");
+
         on_user_update_post_log=true;
     };
   }else{
     if (on_user_update_post_log==false){
-    elog("ERROR : [elite_pixel_game_update] self->on_user_update() returned false - this notification will only occur once\n");
-    vTaskDelay(log_delay / portTICK_PERIOD_MS);
+    ELOG("ERROR : [elite_pixel_game_update] self->on_user_update() returned false - this notification will only occur once\n");
+
     on_user_update_post_log=true;
     };
   };
@@ -596,20 +596,20 @@ void elite_pixel_game_task(void* params){
 //    vTaskDelay(500 / portTICK_PERIOD_MS);
 //  };
 
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  elog("INFO : [elite_pixel_game_task] started\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+  ELOG("INFO : [elite_pixel_game_task] started\n");
+
   //int32_t pixelapp_runtime_limit_ms=60000;
-  int32_t pixelapp_runtime_ms=0;
+  //int32_t pixelapp_runtime_ms=0;
 
 
-  elog("INFO : [elite_pixel_game_task] calling elite_pixel_game_construct(pixel_app_config\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_pixel_game_task] calling elite_pixel_game_construct(pixel_app_config\n");
+
 
   elite_pixel_game_t *p_pixel_game=elite_pixel_game_construct(pixel_game_config);
 
-  elog("INFO : [elite_pixel_game_task] finished constructing pixelapp\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_pixel_game_task] finished constructing pixelapp\n");
+
 
 
 
@@ -626,18 +626,18 @@ void elite_pixel_game_task(void* params){
     if (elite_kill_pixel_game==true) break;
   };
 
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
-  elog("INFO : [elite_pixel_game_task] calling elite_pixel_game_destruct()\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+
+  ELOG("INFO : [elite_pixel_game_task] calling elite_pixel_game_destruct()\n");
+
 
   if (elite_pixel_game_destruct(p_pixel_game)==false) {
-      elog("ERROR : [elite_pixel_game_task] elite_pixel_game_destruct(p_pixel_app) returned false\n");
+      ELOG("ERROR : [elite_pixel_game_task] elite_pixel_game_destruct(p_pixel_app) returned false\n");
     }else{
-      elog("INFO : [elite_pixel_game_task] elite_pixel_game_destruct(p_pixel_app) returned true\n");
+      ELOG("INFO : [elite_pixel_game_task] elite_pixel_game_destruct(p_pixel_app) returned true\n");
   };
   vTaskDelay( log_delay/ portTICK_PERIOD_MS);
-  elog("INFO : [elite_pixel_game_task] killing elite_pixel_game_task\n");
-  vTaskDelay(log_delay / portTICK_PERIOD_MS);
+  ELOG("INFO : [elite_pixel_game_task] killing elite_pixel_game_task\n");
+
   elite_theres_a_pixel_game_running=false;
   elite_kill_pixel_game=false;
   //exit_condition=true;
