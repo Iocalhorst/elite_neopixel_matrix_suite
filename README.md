@@ -3,7 +3,7 @@ esp-idf(5.1+) based gfx engine for fast led-matrix game/animation development + 
 
 
 
-Its at a very early stage. And I'm learning this stuff along the way. Please take that into account.
+Its at a very early stage. And I'm learning this stuff as i go. Please take that into account.
 
 Right now Display size is 10x30 pixels - hardcoded. if you want to give it a try or customize feel free  : 
 
