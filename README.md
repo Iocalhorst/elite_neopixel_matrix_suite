@@ -1,7 +1,8 @@
 # elite_neopixel_matrix_suite
 esp-idf(5.1+) based gfx engine for fast led-matrix game/animation development + example applications. batteries not included
 
-playlist with demo footage, my YT-Channel :
+Theres a playlist with demo footage on my YT-Channel.
+
 https://www.youtube.com/playlist?list=PLHSZrglLne2v1WkVeYQztqZad_cIJlpPZ
 
 
