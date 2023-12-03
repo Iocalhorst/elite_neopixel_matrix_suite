@@ -10,7 +10,7 @@ The purpose of this repository is to
 
 a) migrate my neopixel-related arduino code base to esp-idf. its a lot of stuff. and i'd rather choose not to. but its inevitable, mr anderson.
 
-b) Implement all the fun stuff and pretty things.
+b) Implement all the fun stuff and pretty things. My inner child does not negotiate.
 
 c) And do it "properly". Which is the hardest part. At least for me. You can have my wifi. its in defines.h.... just sayin.
 
