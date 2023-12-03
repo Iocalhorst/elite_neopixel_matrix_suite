@@ -1,5 +1,5 @@
 # elite_neopixel_matrix_suite
-esp-idf(5.1+) based gfx engine for fast led-matrix game/animation development + example applications 
+esp-idf(5.1+) based gfx engine for fast led-matrix game/animation development + example applications. batteries not included
 
 The purpose of this repository is to 
 
