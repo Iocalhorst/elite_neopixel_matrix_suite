@@ -1,9 +1,13 @@
 # elite_neopixel_matrix_suite
 esp-idf(5.1+) based gfx engine for fast led-matrix game/animation development + example applications 
 
+The purpose of this repository is to 
 
+a) migrate my neopixel-related arduino code base to esp-idf. its a lot of stuff. and i'd rather choose not to. but its inevitable, mr anderson.
+b) Implement all the fun stuff and pretty things.
+c) And do it "properly". Which is the hardest part. At least for me.
 
-Its at a very early stage. And I'm learning this stuff as i go. Please take that into account.
+Its at a very early stage. And I'm learning this stuff as i go. please take that into account.
 
 Right now Display size is 10x30 pixels - hardcoded. if you want to give it a try or customize feel free  : 
 
