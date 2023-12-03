@@ -11,7 +11,7 @@ a) migrate my neopixel-related arduino code base to esp-idf. its a lot of stuff.
 
 b) Implement all the fun stuff and pretty things.
 
-c) And do it "properly". Which is the hardest part. At least for me.
+c) And do it "properly". Which is the hardest part. At least for me. You can have my wifi. its in defines.h.... just sayin.
 
 Its at a very early stage. And I'm learning this stuff as i go. please take that into account.
 
