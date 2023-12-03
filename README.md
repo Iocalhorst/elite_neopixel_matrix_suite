@@ -1,6 +1,10 @@
 # elite_neopixel_matrix_suite
 esp-idf(5.1+) based gfx engine for fast led-matrix game/animation development + example applications. batteries not included
 
+playlist with demo footage, my YT-Channel :
+https://www.youtube.com/playlist?list=PLHSZrglLne2v1WkVeYQztqZad_cIJlpPZ
+
+
 The purpose of this repository is to 
 
 a) migrate my neopixel-related arduino code base to esp-idf. its a lot of stuff. and i'd rather choose not to. but its inevitable, mr anderson.
