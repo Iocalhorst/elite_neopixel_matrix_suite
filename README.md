@@ -4,7 +4,9 @@ esp-idf(5.1+) based gfx engine for fast led-matrix game/animation development + 
 The purpose of this repository is to 
 
 a) migrate my neopixel-related arduino code base to esp-idf. its a lot of stuff. and i'd rather choose not to. but its inevitable, mr anderson.
+
 b) Implement all the fun stuff and pretty things.
+
 c) And do it "properly". Which is the hardest part. At least for me.
 
 Its at a very early stage. And I'm learning this stuff as i go. please take that into account.
