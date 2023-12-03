@@ -12,7 +12,7 @@ a) migrate my neopixel-related arduino code base to esp-idf. its a lot of stuff.
 
 b) Implement all the fun stuff and pretty things. My inner child does not negotiate.
 
-c) Do it "properly". I know how not to do things. Which doesnt really help for the most part. At least for me this is the hardest part. Im probably leaking my Wifi. In defines.h....  just sayin. Go ahead. 
+c) Do it "properly". I know how not to do things. Knowing better does very little when its about doing so. Im probably leaking my Wifi. In defines.h....  just sayin. Go ahead. 
 
 Its at a very early stage. And I'm learning this stuff as i go. please take that into account.
 
