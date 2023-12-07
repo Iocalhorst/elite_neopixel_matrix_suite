@@ -318,7 +318,7 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
     ELOG("INFO : [spriteshow_construct] allocating self(spriteshow_t)\n");
 
 
-    spriteshow_t *self=malloc(sizeof(spriteshow_t));
+    spriteshow_t *self=e_mall0c(__FUNCTION__,sizeof(spriteshow_t));
 
     if (self!=NULL) {
         ELOG("INFO : [spriteshow_construct] successfully allocated self(spriteshow_t)\n");
@@ -336,14 +336,14 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
     self->app_name="spriteshow";
     self->num_resources=NUM_URLS;
 
-    self->list_resource_locations = malloc(NUM_URLS * sizeof(char*));
+    self->list_resource_locations = e_mall0c(__FUNCTION__,NUM_URLS * sizeof(char*));
 
     //self->resource_locations=url_list;
     for (size_t r=0;r<NUM_URLS;r++) {
-        self->list_resource_locations[r] = malloc(64 * sizeof(char));
+        self->list_resource_locations[r] = e_mall0c(__FUNCTION__,64 * sizeof(char));
     };
     for (size_t r=0;r<NUM_URLS;r++) {
-        self->list_resource_locations[r] = malloc(64 * sizeof(char));
+        self->list_resource_locations[r] = e_mall0c(__FUNCTION__,64 * sizeof(char));
         self->list_resource_locations[r] = url_list[r];
 
         //sprintf(self->list_resource_locations[r],"/littlefs/%s",url_list[r]);
@@ -352,7 +352,7 @@ spriteshow_t* spriteshow_construct(elite_pixel_game_t* ente){
         //strcpy(self->list_resource_locations[r],full_path);//danger will robinson!
     };
     self->num_sprite_containers=3;
-    self->p_sprite_containers=(sprite_container_t*)malloc(sizeof(sprite_container_t)*self->num_sprite_containers);
+    self->p_sprite_containers=(sprite_container_t*)e_mall0c(__FUNCTION__,sizeof(sprite_container_t)*self->num_sprite_containers);
     if (self->p_sprite_containers==NULL) {
         ELOG("ERROR : [elite_spriteshow_construct] self->p_sprite_containers==NULL\n");
 
@@ -600,6 +600,14 @@ bool spriteshow_on_user_destroy(void* v_self){
 };
 
 
+elite_pixel_game_config_t elite_spriteshow_config={
+    .app_name="spriteshow",
+    .screen_width=10,
+    .screen_height=30,
+    .on_user_construct=(void*)&spriteshow_construct,
+    .on_user_update=&spriteshow_on_user_update,
+    .on_user_destroy=&spriteshow_on_user_destroy
+};
 
 void spriteshow_start_task(){
 
@@ -607,15 +615,8 @@ void spriteshow_start_task(){
 
     ELOG("INFO : [main_start_pixel_game_task] creating &pixel_game_task\n");
 
-    elite_pixel_game_config_t pixel_game_config={
-        .app_name="spriteshow",
-        .screen_width=10,
-        .screen_height=30,
-        .on_user_construct=(void*)&spriteshow_construct,
-        .on_user_update=&spriteshow_on_user_update,
-        .on_user_destroy=&spriteshow_on_user_destroy
-    };
-    xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 4096,&pixel_game_config, 5, NULL);
+
+    xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 4096,&elite_spriteshow_config, 5, NULL);
     ELOG("INFO : [main_start_pixelapp_task] leaving main_start_pixelapp_task\n");
 
 

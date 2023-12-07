@@ -75,9 +75,9 @@ bool elite_sprite_load(elite_sprite_t *self){
     
     }else {
       size_t _p_bitmap_size=sizeof(sRGB)*self->height*self->width;
-      self->_p_bitmap=(sRGB*)malloc(_p_bitmap_size);
+      self->_p_bitmap=(sRGB*)e_mall0c(__FUNCTION__,_p_bitmap_size);
       if (self->_p_bitmap==NULL) {
-        ELOG("ERROR : [elite_sprite_load] malloc fail\n");
+        ELOG("ERROR : [elite_sprite_load] e_mall0c fail\n");
         
         err_t fclose_ret=fclose(f);
         ELOG("DEBUG : [elite_sprite_load] fclose() fclose_ret=%i\n",fclose_ret);
@@ -85,7 +85,7 @@ bool elite_sprite_load(elite_sprite_t *self){
         
         return false;
       }else{
-        ELOG("DEBUG : [elite_sprite_load] malloc(%dd)==%p success\n",_p_bitmap_size,(void *)&self->_p_bitmap);
+        ELOG("DEBUG : [elite_sprite_load] e_mall0c(__FUNCTION__,%dd)==%p success\n",_p_bitmap_size,(void *)&self->_p_bitmap);
         
         
       };
@@ -131,7 +131,7 @@ elite_sprite_t *elite_sprite_construct(elite_sprite_config_t config){
     ELOG("INFO : [spriteshow_construct] entering elite_sprite_construct()\n");
     
 
-    elite_sprite_t *self=(elite_sprite_t*)malloc(sizeof(elite_sprite_t));
+    elite_sprite_t *self=(elite_sprite_t*)e_mall0c(__FUNCTION__,sizeof(elite_sprite_t));
     memset(&self->url, 0, sizeof(self->url));
     strncpy(self->url,config.url,strlen(config.url));//lol
 

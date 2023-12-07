@@ -1,3 +1,6 @@
+//theres bloody race condition bugs all over the place
+//if you remove the 2 elog lines in elite_tetris_agent_construct it stops working ... wtf
+
 #define TAG "EliteProject"
 
 #include <stdio.h>
@@ -284,7 +287,7 @@ void main_reboot(){
   ESP_LOGI(TAG, "rebooting in 0");
   vTaskDelay(500 / portTICK_PERIOD_MS);
   //just for good measure
-  free(global_log_buffer);
+  //free(global_log_buffer);
   esp_vfs_littlefs_unregister(esp_vfs_littlefs_conf.partition_label);
   ELOG("INFO : [main_reboot] LittleFS unmounted\n");
 

@@ -13,6 +13,8 @@
 #include "line_of_sight_demo.h"
 #include "elite_pinball.h"
 #include "elite_snake.h"
+#include "tetr1s_reloaded.h"
+#include "elite_matrix_rain.h"
 #include "elite_io.h"
 #include "elite.h"
 
@@ -47,7 +49,7 @@ typedef struct {
 
 
 elite_shell_t* elite_shell_construct(){
-  elite_shell_t *self=(elite_shell_t*)malloc(sizeof(elite_shell_t));
+  elite_shell_t *self=(elite_shell_t*)e_mall0c(__FUNCTION__,sizeof(elite_shell_t));
 
   named_env_var_t username={.name="username",.value="user"};
   named_env_var_t hostname={.name="hostname",.value="esp32matrix"};
@@ -56,7 +58,7 @@ elite_shell_t* elite_shell_construct(){
 
 
   self->num_named_env_vars=4;
-  self->named_env_vars=(named_env_var_t*)malloc(sizeof(named_env_var_t)*self->num_named_env_vars);
+  self->named_env_vars=(named_env_var_t*)e_mall0c(__FUNCTION__,sizeof(named_env_var_t)*self->num_named_env_vars);
   self->named_env_vars[0]=username;
   self->named_env_vars[1]=hostname;
   self->named_env_vars[2]=pwd;
@@ -76,10 +78,23 @@ bool elite_shell_send_prompt(elite_shell_t *self,int outfd,int flags){
 
 bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, size_t len,int flags){
 
+    if (elite_state!=ELITE_STATE_OK) {
+        if (strcmp(buf,"reboot\n\0")) {
+            const char* panic_str="due to system panic only reboot command is allowed\n";
+            send(outfd,panic_str,strlen(panic_str),flags);
+            return true;
+        };
+        const char* response_str="rebooting\n";
+        send(outfd,response_str,strlen(response_str),flags);
+    main_reboot();
+    return true;
+  };
+
   int cmd=0;
   if (cmd==0&&!strcmp(buf,".\n\0"))cmd=self->last_cmd;
   if (cmd==0&&!strcmp(buf,"rain\n\0"))cmd=1;
   if (cmd==0&&!strcmp(buf,"reboot\n\0"))cmd=2;
+  if (cmd==0&&!strcmp(buf,"rb\n\0"))cmd=2;
   if (cmd==0&&!strcmp(buf,"kill\n\0"))cmd=3;
   if (cmd==0&&!strcmp(buf,"exit\n\0"))cmd=4;
   if (cmd==0&&!strcmp(buf,"testfs\n\0"))cmd=5;
@@ -102,7 +117,10 @@ bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, siz
   if (cmd==0&&!strcmp(buf,"startudp\n\0"))cmd=20;
   if (cmd==0&&!strcmp(buf,"stopudp\n\0"))cmd=21;
   if (cmd==0&&!strcmp(buf,"mouse\n\0"))cmd=22;
+  if (cmd==0&&!strcmp(buf,"tetr1s\n\0"))cmd=23;
+  if (cmd==0&&!strcmp(buf,"matrix\n\0"))cmd=24;
   if (cmd==0&&!strcmp(buf,"test\n\0"))cmd=42;
+  if (cmd==0&&!strcmp(buf,"panic\n\0"))cmd=9001;
 
   if (cmd>0) self->last_cmd=cmd;
   char* wtf_str="wtf?\n";
@@ -226,12 +244,30 @@ bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, siz
     };
     case 22 : {
 //      if (mr_mouse_global_handle!=NULL) free(mr_mouse_global_handle);
-      elite_mouse_create_default();
-      break;
+        elite_mouse_create_default();
+        break;
+    };
+    case 23 : {
+        if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false){
+            tetr1s_reloaded_start_task();
+        };
+        break;
+    };
+    case 24 : {
+        if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false){
+            elite_matrix_rain_start_task();
+        };
+        break;
     };
     case 42 : {
 //      if (mr_mouse_global_handle!=NULL) free(mr_mouse_global_handle);
       ELOG("TEST\n");
+      break;
+    };
+    case 9001 : {
+//      if (mr_mouse_global_handle!=NULL) free(mr_mouse_global_handle);
+      ELOG("DEBUG : [elite_shell_handle_input] panic triggerd\n");
+      elite_panic(__FUNCTION__,"triggerd by user input command",__LINE__);
       break;
     };
     default : {

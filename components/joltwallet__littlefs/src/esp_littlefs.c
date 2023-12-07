@@ -686,7 +686,7 @@ static esp_err_t esp_littlefs_init_efs(esp_littlefs_t** efs, const esp_partition
     /* Allocate Context */
     *efs = calloc(1, sizeof(esp_littlefs_t));
     if (efs == NULL) {
-        ESP_LOGE(ESP_LITTLEFS_TAG, "esp_littlefs could not be malloced");
+        ESP_LOGE(ESP_LITTLEFS_TAG, "esp_littlefs could not be e_mall0ced");
         return ESP_ERR_NO_MEM;
     }
     (*efs)->partition = partition;
@@ -730,7 +730,7 @@ static esp_err_t esp_littlefs_init_efs(esp_littlefs_t** efs, const esp_partition
 
     (*efs)->fs = calloc(1, sizeof(lfs_t));
     if ((*efs)->fs == NULL) {
-        ESP_LOGE(ESP_LITTLEFS_TAG, "littlefs could not be malloced");
+        ESP_LOGE(ESP_LITTLEFS_TAG, "littlefs could not be e_mall0ced");
         return ESP_ERR_NO_MEM;
     }
 
@@ -1692,7 +1692,7 @@ static DIR* vfs_littlefs_opendir(void* ctx, const char* name) {
 
     dir = calloc(1, sizeof(vfs_littlefs_dir_t));
     if( dir == NULL ) {
-        ESP_LOGE(ESP_LITTLEFS_TAG, "dir struct could not be malloced");
+        ESP_LOGE(ESP_LITTLEFS_TAG, "dir struct could not be e_mall0ced");
         errno = ENOMEM;
         goto exit;
     }
@@ -1700,7 +1700,7 @@ static DIR* vfs_littlefs_opendir(void* ctx, const char* name) {
     dir->path = strdup(name);
     if(dir->path == NULL){
         errno = ENOMEM;
-        ESP_LOGE(ESP_LITTLEFS_TAG, "dir path name could not be malloced");
+        ESP_LOGE(ESP_LITTLEFS_TAG, "dir path name could not be e_mall0ced");
         goto exit;
     }
 

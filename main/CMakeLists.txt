@@ -11,5 +11,7 @@ idf_component_register(SRCS "main.c" INCLUDE_DIRS "."
                 "../elite_components/elite_pixel_applications/elite_tetris"
                 "../elite_components/elite_pixel_applications/line_of_sight_demo"
                 "../elite_components/elite_pixel_applications/elite_pinball"
-                "../elite_components/elite_pixel_applications/elite_snake"                
+                "../elite_components/elite_pixel_applications/elite_snake"
+                "../elite_components/elite_pixel_applications/tetr1s_reloaded"
+                "../elite_components/elite_pixel_applications/elite_matrix_rain"   
                     EMBED_FILES "favicon.ico" "upload_script.html")

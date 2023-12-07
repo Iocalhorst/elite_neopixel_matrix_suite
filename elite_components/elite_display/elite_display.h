@@ -108,7 +108,7 @@ void elite_display_task(void* pv_params);
 
 elite_display_t* elite_display_construct(elite_display_config_t *conf){
 
-    elite_display_t* self=(elite_display_t*)malloc(sizeof(elite_display_t));
+    elite_display_t* self=(elite_display_t*)e_mall0c(__FUNCTION__,sizeof(elite_display_t));
     self->conf.width=conf->width;
     self->conf.height=conf->height;
     self->conf.color_correction_r=conf->color_correction_r;
@@ -118,8 +118,8 @@ elite_display_t* elite_display_construct(elite_display_config_t *conf){
     self->conf.fgamma=conf->fgamma;
     self->conf.fps=conf->fps;
     self->p_input_framebuf_size=sizeof(INPUT_FRAMEBUF_PIXFORMAT)*self->conf.height*self->conf.width;
-    self->p_input_framebuf=malloc(self->p_input_framebuf_size);
-    //self->p_output_framebuf=(OUTPUT_PIXFORMAT*)malloc(sizeof(OUTPUT_PIXFORMAT)*self->conf.height*self->conf.width);
+    self->p_input_framebuf=e_mall0c(__FUNCTION__,self->p_input_framebuf_size);
+    //self->p_output_framebuf=(OUTPUT_PIXFORMAT*)e_mall0c(__FUNCTION__,sizeof(OUTPUT_PIXFORMAT)*self->conf.height*self->conf.width);
     for (size_t i=0;i<self->conf.height*self->conf.width;i++) {
         INPUT_FRAMEBUF_PIXFORMAT c={0.0f,0.0f,0.0f};
         self->p_input_framebuf[i]=c;

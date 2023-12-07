@@ -38,7 +38,7 @@ void elite_pinball_reset_ball(ball_t* p_ball){
 elite_pinball_t* elite_pinball_construct(elite_pixel_game_t* ente){
 
 
-  elite_pinball_t *self=malloc(sizeof(elite_pinball_t));
+  elite_pinball_t *self=e_mall0c(__FUNCTION__,sizeof(elite_pinball_t));
   if (self==NULL) {
     ELOG("ERROR : [elite_pinball_construct] failed to allocated self(elite_pinball_t); returning NULL from constructor\n");
 

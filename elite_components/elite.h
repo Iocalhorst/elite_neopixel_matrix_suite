@@ -35,12 +35,66 @@
 #include "spi_flash_mmap.h"
 #endif
 
-#define ELOG(...) do {char str[512]={0};sprintf(str,__VA_ARGS__);el0g(str);}while(0)
-#define NEVERMIND(X) do {(void)X;}while(0)
+
 SemaphoreHandle_t xHighlander;
 TaskHandle_t p_elite_logger_task_handle;
 
 static const int log_delay=0;
+
+
+
+
+static EventGroupHandle_t s_wifi_event_group;
+static int s_retry_num = 0;
+static size_t global_log_buffer_size=1024;
+static char global_log_buffer[1024]={0};
+
+static void el0g(const char* s);
+
+bool eliteAssert(bool ok,const char* msg);
+
+#define ELITE_STATE_PANIC 255
+#define ELITE_STATE_OK 0
+static uint8_t elite_state=0;
+//void el0g(const char* )const char
+#define ELOG(...) do {char str[512]={0};sprintf(str,__VA_ARGS__);str[511]=0;el0g(str);vTaskDelay(100/portTICK_PERIOD_MS);}while(0)
+#define NEVERMIND(X) do {(void)X;}while(0)
+#define ELITE_CHECK(MSG) do{if (elite_state!=0){ELOG("DEBUG : [%s] trapped due to elite_panic state\n",MSG);for(;;)vTaskDelay(portMAX_DELAY);ELOG("DEBUG : UNREACHABLE");}} while(0)
+
+
+
+void el0g(const char* s){
+
+
+//if (xHighlander==NULL) return;
+//if (xHighlander==NULL) return;
+  xSemaphoreTake( xHighlander,5000/portTICK_PERIOD_MS);
+  {
+//        size_t *ps=(char)malloc(strlen(s);
+      //  configASSERT(global_log_buffer);
+        size_t i;
+        memset(global_log_buffer,0,global_log_buffer_size);
+        for (i=0;((i<strlen(s))&&(i<global_log_buffer_size-1));i++) {global_log_buffer[i]=s[i];};
+        global_log_buffer[i]=0;//not sure if thats needed but it wont hurt. it could hurt otherwise though
+        xTaskNotify(p_elite_logger_task_handle,i,3);//3==eSetValueWithOverwrite
+    };
+    for (;;){
+      if (global_log_buffer[0]==0) break;
+    };
+    xSemaphoreGive(xHighlander);
+};
+
+void elite_panic(const char* func_name,const char* reason_str,int line_n){
+  ELOG("FATAL ERROR : [%s] triggerd panic cause of %s in line %i\n",func_name,reason_str,line_n);
+  elite_state=ELITE_STATE_PANIC;
+};
+
+void* e_mall0c(const char* origin,size_t sz){
+  void* v_ptr=NULL;
+  v_ptr=malloc(sz);
+  if (v_ptr==NULL) elite_panic(origin,"malloc fail",9001);
+  return v_ptr;
+};
 
 esp_vfs_littlefs_conf_t esp_vfs_littlefs_conf = {
     .base_path = "/littlefs",
@@ -62,18 +116,6 @@ void elite_swapf(float *a, float*b)
     *b = *a;
     *a = temp;
 };
-
-
-bool eliteAssert(bool ok,const char* msg);
-
-
-static EventGroupHandle_t s_wifi_event_group;
-static int s_retry_num = 0;
-static size_t global_log_buffer_size=1024;
-static char* global_log_buffer=NULL;
-
-static void el0g(const char* s);
-
 
 static void elite_wifi_event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data){
@@ -201,9 +243,9 @@ static void elite_logger_task(void* args){
   }else ESP_LOGE(TAG, "Socket initalizing failed");
   lwip_connect(sock, (struct sockaddr*)&addr, sizeof(addr));
 
-  global_log_buffer=(char*)malloc(global_log_buffer_size*sizeof(char));
+  //global_log_buffer=(char*)malloc(global_log_buffer_size*sizeof(char));
   uint32_t ulNotificationValue;
-  size_t max_tx_buf=1000;
+  size_t max_tx_buf=1024+128;
   char* tx_buf=(char*)malloc(max_tx_buf);
   memset(tx_buf,0,max_tx_buf);
   bool elite_logger_exit_condition=false;
@@ -249,28 +291,6 @@ static void elite_logger_task(void* args){
 };
 
 
-
-
-void el0g(const char* s){
-
-
-//if (xHighlander==NULL) return;
-//if (xHighlander==NULL) return;
-  xSemaphoreTake( xHighlander,5000/portTICK_PERIOD_MS);
-  {
-//        size_t *ps=(char)malloc(strlen(s);
-        configASSERT(global_log_buffer);
-        size_t i;
-        memset(global_log_buffer,0,global_log_buffer_size);
-        for (i=0;((i<strlen(s))&&(i<global_log_buffer_size-1));i++) {global_log_buffer[i]=s[i];};
-        global_log_buffer[i]=0;//not sure if thats needed but it wont hurt. it could hurt otherwise though
-        xTaskNotify(p_elite_logger_task_handle,i,3);//3==eSetValueWithOverwrite
-    };
-    for (;;){
-      if (global_log_buffer[0]==0) break;
-    };
-    xSemaphoreGive(xHighlander);
-};
 
 bool eliteAssert(bool ok,const char* msg){
   if (!ok) {ELOG(msg);};

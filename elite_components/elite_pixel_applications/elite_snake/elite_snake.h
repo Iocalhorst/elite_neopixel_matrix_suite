@@ -107,27 +107,27 @@ void elite_snake_advance(elite_snake_t *self){
 
 elite_snake_t* elite_snake_construct(elite_pixel_game_t* ente){
   ELOG("INFO : [elite_snake_construct] entering elite_snake_construct()\n");
-  
+
 
   ELOG("INFO : [elite_snake_construct] allocating self(elite_snake_t)\n");
-  
-  elite_snake_t *self=(elite_snake_t*)malloc(sizeof(elite_snake_t));
+
+  elite_snake_t *self=(elite_snake_t*)e_mall0c(__FUNCTION__,sizeof(elite_snake_t));
   if (self!=NULL) {
     ELOG("INFO : [elite_snake_construct] successfully allocated self(elite_snake_t)\n");
-    
+
   }else {
     ELOG("ERROR : [elite_snake_construct] failed to allocated self(elite_snake_t); returning NULL from constructor\n");
-    
+
     return NULL;
   };
   self->app_name="elite_snake";
   self->tick_intervall=0.033f;
   self->height=30;
   self->width=10;
-  self->playfield=(int*)malloc(sizeof(int)*self->height*self->width);
+  self->playfield=(int*)e_mall0c(__FUNCTION__,sizeof(int)*self->height*self->width);
 
   ELOG("INFO : [elite_snake_construct] successfully constructed self(elite_snake_t); returning self from constructor\n");
-  
+
 
 
   return self;
@@ -140,7 +140,7 @@ void elite_snake_turn(elite_snake_t* self){
 
 void elite_snake_reset_game(elite_snake_t* self){
   ELOG("DEBUG : [elite_snake_reset_game] entered elite_snake_reset_game()\n");
-  
+
   self->fuse=2.0f;
   int field_t;
   int idx=0;
@@ -166,7 +166,7 @@ void elite_snake_reset_game(elite_snake_t* self){
   self->snake_spin=1;
   for (int i=0;i<self->snake_len;i++) elite_snake_advance(self);
   ELOG("DEBUG : [elite_snake_reset_game] leaving elite_snake_reset_game()\n");
-  
+
 
 
 }
@@ -214,7 +214,7 @@ bool elite_snake_on_user_update(void* params,elite_pixel_game_t *ente,float fEla
   if (elite_snake_on_user_update_entered_log==false) {
       elite_snake_on_user_update_entered_log=true;
       ELOG("INFO : [elite_snake_update] entered elite_snake_update() - this notification will only occur once\n");
-      
+
   };
 //body
   elite_snake_t *self=(elite_snake_t*)params;
@@ -240,7 +240,7 @@ bool elite_snake_on_user_update(void* params,elite_pixel_game_t *ente,float fEla
   if (elite_snake_on_user_update_leaving_log==false) {
       elite_snake_on_user_update_leaving_log=true;
       ELOG("INFO : [elite_snake_on_user_update] leaving elite_snake_on_user_update() - this notification will only occur once\n");
-      
+
     };
 
   return true;
@@ -251,45 +251,44 @@ bool elite_snake_on_user_update(void* params,elite_pixel_game_t *ente,float fEla
 bool elite_snake_on_user_destroy(void* params){
 
     ELOG("INFO : [elite_snake_on_user_update] entering elite_snake_on_user_destroy()\n");
-    
+
     elite_snake_t *self=(elite_snake_t*)params;
     ELOG("INFO : [elite_snake_on_user_update] deallocating self(elite_snake)\n");
-    
+
 
     if (self!=NULL) {
         if (self->playfield) free(self->playfield);
         free(self);
         ELOG("INFO : [elite_snake_on_user_update] successfully deallocated self(elite_snake)\n");
-        
+
     }else {
         ELOG("ERROR : [elite_snake_on_user_update] failed to deallocated self(elite_snake); returning false from elite_snake_on_user_destroy()\n");
-        
+
         return false;
     };
     ELOG("INFO : [elite_snake_on_user_update] returning true from template_on_user_destroy()\n");
-    
+
   return true;
 
 };
 
 
-
+elite_pixel_game_config_t elite_snake_config={
+    .app_name="elite_snake",
+    .screen_width=10,
+    .screen_height=30,
+    .on_user_construct=(void*)&elite_snake_construct,
+    .on_user_update=&elite_snake_on_user_update,
+    .on_user_destroy=&elite_snake_on_user_destroy
+};
 void elite_snake_start_task(){
 
     ELOG("INFO : [elite_snake_start_pixel_game_task] entered elite_snake_start_pixelapp_task\n");
-    
+
     ELOG("INFO : [elite_snake_start_pixel_game_task] creating &pixel_game_task\n");
-    
-    elite_pixel_game_config_t pixel_game_config={
-        .app_name="elite_snake",
-        .screen_width=10,
-        .screen_height=30,
-        .on_user_construct=(void*)&elite_snake_construct,
-        .on_user_update=&elite_snake_on_user_update,
-        .on_user_destroy=&elite_snake_on_user_destroy
-    };
-    xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 4096,&pixel_game_config, 5, NULL);
+
+    xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 4096,&elite_snake_config, 5, NULL);
     ELOG("INFO : [elite_snake_start_pixelapp_task] leaving elite_snake_start_pixelapp_task\n");
-    
+
 
 };

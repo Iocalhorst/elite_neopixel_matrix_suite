@@ -90,7 +90,7 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
 
 
 
-  elite_pixel_game_t* self=(elite_pixel_game_t*)malloc(sizeof(elite_pixel_game_t));
+  elite_pixel_game_t* self=(elite_pixel_game_t*)e_mall0c(__FUNCTION__,sizeof(elite_pixel_game_t));
   if (self!=NULL) {
       ELOG("INFO : [elite_pixel_game_construct] successfully allocated pixelapp memory\n");
 
@@ -107,7 +107,7 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
 
 
     self->p_framebuf_size=0;//uninitialized variables suck.
-    self->p_framebuf=(FRAMEBUF_PIXFORMAT*)malloc(self->config.screen_width*self->config.screen_height*sizeof(FRAMEBUF_PIXFORMAT));
+    self->p_framebuf=(FRAMEBUF_PIXFORMAT*)e_mall0c(__FUNCTION__,self->config.screen_width*self->config.screen_height*sizeof(FRAMEBUF_PIXFORMAT));
 
   if (self->p_framebuf!=NULL) {
     ELOG("INFO : [elite_pixel_game_construct] p_framebuf allocated\n");
@@ -124,7 +124,7 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
   };
   ELOG("INFO : [elite_pixel_game_construct] allocating p_layer[0]\n");
 
-  self->p_layer[0]=(layer_fRGBA*)malloc(sizeof(layer_fRGBA));
+  self->p_layer[0]=(layer_fRGBA*)e_mall0c(__FUNCTION__,sizeof(layer_fRGBA));
   if (self->p_layer[0]!=NULL) {
     ELOG("INFO : [elite_pixel_game_construct] p_layer[0] allocated\n");
     self->target_layer=0;
@@ -134,7 +134,7 @@ elite_pixel_game_t* elite_pixel_game_construct(elite_pixel_game_config_t config)
 
 };
 
-    self->p_layer[0]->pixels=(LAYER_PIXFORMAT*)malloc(self->config.screen_width*self->config.screen_height*sizeof(LAYER_PIXFORMAT));
+    self->p_layer[0]->pixels=(LAYER_PIXFORMAT*)e_mall0c(__FUNCTION__,self->config.screen_width*self->config.screen_height*sizeof(LAYER_PIXFORMAT));
     if (self->p_layer[0]->pixels!=NULL) {
       ELOG("INFO : [elite_pixel_game_construct] p_layer[0].pixels allocated\n");
       self->num_layers=1;
@@ -576,7 +576,10 @@ void elite_pixel_game_update_fElapsedTime(elite_pixel_game_t *self){
 };
 
 
-void elite_pixel_game_task(void* params){
+static void elite_pixel_game_task(void* params){
+  if (params==NULL) {ELOG("FATAL ERROR : %s","config ptr==NULL (did the data behind it run out of scope?)");};
+  vTaskDelay(2000/portTICK_PERIOD_MS);
+  assert(params);
   elite_theres_a_pixel_game_running=true;
   elite_kill_pixel_game=false;
   elite_pixel_game_config_t *p_pixel_game_config=(elite_pixel_game_config_t*)params;
@@ -615,9 +618,9 @@ void elite_pixel_game_task(void* params){
 
 
   while (true){
-
+    ELITE_CHECK(__FUNCTION__);
     elite_pixel_game_update_fElapsedTime(p_pixel_game);
-
+    ELITE_CHECK(__FUNCTION__);
     elite_pixel_game_update(p_pixel_game,p_pixel_game->fElapsedTime);
     //TODO factor out display output function calls to some more appropriate place ...
 

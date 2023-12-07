@@ -56,7 +56,7 @@ static lfs_emubd_block_t *lfs_emubd_mutblock(
 
     } else if (block_) {
         // rc > 1? need to create a copy
-        lfs_emubd_block_t *nblock = malloc(
+        lfs_emubd_block_t *nblock = e_mall0c(__FUNCTION__,
                 sizeof(lfs_emubd_block_t) + bd->cfg->erase_size);
         if (!nblock) {
             return NULL;
@@ -72,7 +72,7 @@ static lfs_emubd_block_t *lfs_emubd_mutblock(
 
     } else {
         // no block? need to allocate
-        lfs_emubd_block_t *nblock = malloc(
+        lfs_emubd_block_t *nblock = e_mall0c(__FUNCTION__,
                 sizeof(lfs_emubd_block_t) + bd->cfg->erase_size);
         if (!nblock) {
             return NULL;
@@ -117,7 +117,7 @@ int lfs_emubd_create(const struct lfs_config *cfg,
     bd->cfg = bdcfg;
 
     // allocate our block array, all blocks start as uninitialized
-    bd->blocks = malloc(bd->cfg->erase_count * sizeof(lfs_emubd_block_t*));
+    bd->blocks = e_mall0c(__FUNCTION__,bd->cfg->erase_count * sizeof(lfs_emubd_block_t*));
     if (!bd->blocks) {
         LFS_EMUBD_TRACE("lfs_emubd_create -> %d", LFS_ERR_NOMEM);
         return LFS_ERR_NOMEM;
@@ -132,7 +132,7 @@ int lfs_emubd_create(const struct lfs_config *cfg,
     bd->disk = NULL;
 
     if (bd->cfg->disk_path) {
-        bd->disk = malloc(sizeof(lfs_emubd_disk_t));
+        bd->disk = e_mall0c(__FUNCTION__,sizeof(lfs_emubd_disk_t));
         if (!bd->disk) {
             LFS_EMUBD_TRACE("lfs_emubd_create -> %d", LFS_ERR_NOMEM);
             return LFS_ERR_NOMEM;
@@ -156,7 +156,7 @@ int lfs_emubd_create(const struct lfs_config *cfg,
         // if we're emulating erase values, we can keep a block around in
         // memory of just the erase state to speed up emulated erases
         if (bd->cfg->erase_value != -1) {
-            bd->disk->scratch = malloc(bd->cfg->erase_size);
+            bd->disk->scratch = e_mall0c(__FUNCTION__,bd->cfg->erase_size);
             if (!bd->disk->scratch) {
                 LFS_EMUBD_TRACE("lfs_emubd_create -> %d", LFS_ERR_NOMEM);
                 return LFS_ERR_NOMEM;
@@ -618,7 +618,7 @@ int lfs_emubd_copy(const struct lfs_config *cfg, lfs_emubd_t *copy) {
     lfs_emubd_t *bd = cfg->context;
 
     // lazily copy over our block array
-    copy->blocks = malloc(bd->cfg->erase_count * sizeof(lfs_emubd_block_t*));
+    copy->blocks = e_mall0c(__FUNCTION__,bd->cfg->erase_count * sizeof(lfs_emubd_block_t*));
     if (!copy->blocks) {
         LFS_EMUBD_TRACE("lfs_emubd_copy -> %d", LFS_ERR_NOMEM);
         return LFS_ERR_NOMEM;

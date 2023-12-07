@@ -40,7 +40,7 @@ elite_mouse_t* elite_mouse_construct(elite_mouse_conf_t* elite_mouse_conf){
     ELOG("DEBUG [elite_mouse_construc] enter \n");
 
 
-    elite_mouse_t* self=(elite_mouse_t*)malloc(sizeof(elite_mouse_t*));
+    elite_mouse_t* self=(elite_mouse_t*)e_mall0c(__FUNCTION__,sizeof(elite_mouse_t*));
     self->posx=elite_mouse_conf->posx;
     self->posy=elite_mouse_conf->posy;
     self->buttonl=elite_mouse_conf->buttonl;

@@ -46,17 +46,21 @@ void elite_tetris_agent_run_simulation(elite_tetris_agent_t* self);
 void elite_tetris_agent_set_keystroke_intervall(elite_tetris_agent_t* self,float f);
 float elite_tetris_agent_evaluate_resultset(resultset_t resultset);
 
-
 elite_tetris_agent_t* elite_tetris_agent_construct(){
-  elite_tetris_agent_t* self=(elite_tetris_agent_t*)malloc(sizeof(elite_tetris_agent_t));
+
+//  ELOG("DEBUG : [elite_tetris_agent_construct] enter\n");
+
+  elite_tetris_agent_t* self=(elite_tetris_agent_t*)e_mall0c(__FUNCTION__,sizeof(elite_tetris_agent_t));
+
   self->f_fuse=0.3f;
   //self->listResults=LinkedList<sResultSet>();
   self->f_keystroke_intervall=0.25f;
-  self->p_backup_block=(elite_tetris_block_t*)malloc(sizeof(elite_tetris_block_t));
-  self->p_backup_block->body_str=(char*)malloc(16);
-  self->p_test_block=(elite_tetris_block_t*)malloc(sizeof(elite_tetris_block_t));
-  self->p_test_block->body_str=(char*)malloc(16);
+  self->p_backup_block=(elite_tetris_block_t*)e_mall0c(__FUNCTION__,sizeof(elite_tetris_block_t));
+  self->p_backup_block->body_str=(char*)e_mall0c(__FUNCTION__,16);
+  self->p_test_block=(elite_tetris_block_t*)e_mall0c(__FUNCTION__,sizeof(elite_tetris_block_t));
+  self->p_test_block->body_str=(char*)e_mall0c(__FUNCTION__,16);
 
+//  ELOG("DEBUG : [elite_tetris_agent_construct] exit\n");
   return self;
 };
 
@@ -536,13 +540,13 @@ void elite_tetris_agent_run_simulation(elite_tetris_agent_t *self){
 
         };
     };
-    //ELOG("DEBUG : [elite_tetris_agent_run_simulation] f_best_result_score==%f\n",self->f_best_result_score);
+  //  ELOG("DEBUG : [elite_tetris_agent_run_simulation] f_best_result_score==%f\n",self->f_best_result_score);
     //
     //
-    //ELOG("DEBUG : [elite_tetris_agent_run_simulation] best_result_x==%i\n",self->best_result_x);
+  //  ELOG("DEBUG : [elite_tetris_agent_run_simulation] best_result_x==%i\n",self->best_result_x);
     //
     //
-    //ELOG("DEBUG : [elite_tetris_agent_run_simulation] best_rotation_count==%i\n",self->best_result_rotation_count);
+  //  ELOG("DEBUG : [elite_tetris_agent_run_simulation] best_rotation_count==%i\n",self->best_result_rotation_count);
     //
 
   };

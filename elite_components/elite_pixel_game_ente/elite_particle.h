@@ -28,9 +28,9 @@ typedef struct{
 }elite_particle_shower_t;
 
  elite_particle_shower_t* elite_particle_shower_construct(elite_particle_shower_config_t self_config){
-  elite_particle_shower_t *self=(elite_particle_shower_t*)malloc(sizeof(elite_particle_shower_t));
+  elite_particle_shower_t *self=(elite_particle_shower_t*)e_mall0c(__FUNCTION__,sizeof(elite_particle_shower_t));
   self->num_particles=self_config.num_particles;
-  self->particles=(elite_particle_t*)malloc(self->num_particles*sizeof(elite_particle_t));
+  self->particles=(elite_particle_t*)e_mall0c(__FUNCTION__,self->num_particles*sizeof(elite_particle_t));
   for (int i=0;i<self->num_particles;i++){
     self->particles[i].fx=(float)(esp_random()%10);
     self->particles[i].fy=-30.0f-(float)(esp_random()%30);

@@ -125,7 +125,7 @@ void line_of_sight_demo_cast_illumination_map(line_of_sight_demo_t* self,light_s
 };
 
 line_of_sight_demo_t* line_of_sight_demo_construct(elite_pixel_game_t* ente){
-  line_of_sight_demo_t *self=malloc(sizeof(line_of_sight_demo_t));
+  line_of_sight_demo_t *self=e_mall0c(__FUNCTION__,sizeof(line_of_sight_demo_t));
   if (self!=NULL) {
     ELOG("INFO : [line_of_sight_demo_construct] successfully allocated self(line_of_sight_demo_t)\n");
 
@@ -361,6 +361,14 @@ bool line_of_sight_demo_on_user_destroy(void* params){
 };
 
 
+elite_pixel_game_config_t line_of_sight_demo_config={
+    .app_name="line_of_sight_demo",
+    .screen_width=10,
+    .screen_height=30,
+    .on_user_construct=(void*)&line_of_sight_demo_construct,
+    .on_user_update=&line_of_sight_demo_on_user_update,
+    .on_user_destroy=&line_of_sight_demo_on_user_destroy
+};
 
 void line_of_sight_demo_start_task(){
 
@@ -368,15 +376,8 @@ void line_of_sight_demo_start_task(){
 
     ELOG("INFO : [line_of_sight_demo_start_pixel_game_task] creating &pixel_game_task\n");
 
-    elite_pixel_game_config_t pixel_game_config={
-        .app_name="line_of_sight_demo",
-        .screen_width=10,
-        .screen_height=30,
-        .on_user_construct=(void*)&line_of_sight_demo_construct,
-        .on_user_update=&line_of_sight_demo_on_user_update,
-        .on_user_destroy=&line_of_sight_demo_on_user_destroy
-    };
-    xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 4096,&pixel_game_config, 5, NULL);
+
+    xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 4096,&line_of_sight_demo_config, 5, NULL);
     ELOG("INFO : [line_of_sight_demo_start_pixelapp_task] leaving line_of_sight_demo_start_pixelapp_task\n");
 
 

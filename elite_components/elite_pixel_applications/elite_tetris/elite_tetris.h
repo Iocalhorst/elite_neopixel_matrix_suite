@@ -85,12 +85,12 @@ elite_tetris_t* elite_tetris_construct(elite_pixel_game_t* ente){
     ELOG("INFO : [elite_tetris_construct] allocating self(elite_tetris_t)\n");
 
 
-    elite_tetris_t *self=malloc(sizeof(elite_tetris_t));
+    elite_tetris_t *self=e_mall0c(__FUNCTION__,sizeof(elite_tetris_t));
 
     self->app_name="elite_tetris";
     self->next_tick=0.1f;
     self->startup_delay=1.5f;
-    self->tick_intervall=0.00175f;
+    self->tick_intervall=0.0175f;
     self->color_maps[0][0]=black1;
     self->color_maps[0][1]=red1;
     self->color_maps[0][2]=green1;
@@ -138,7 +138,7 @@ elite_tetris_t* elite_tetris_construct(elite_pixel_game_t* ente){
 
     elite_tetris_agent_set_keystroke_intervall(self->p_agent,self->tick_intervall);
 
-    self->p_current_block=(elite_tetris_block_t*)malloc(sizeof(elite_tetris_block_t));
+    self->p_current_block=(elite_tetris_block_t*)e_mall0c(__FUNCTION__,sizeof(elite_tetris_block_t));
     ELOG("INFO : [elite_tetris_construct] allocating self->current_block\n");
 
 
@@ -152,7 +152,7 @@ elite_tetris_t* elite_tetris_construct(elite_pixel_game_t* ente){
 
     ELOG("INFO : [elite_tetris_construct] allocating self->current_block->body_str\n");
 
-    self->p_current_block->body_str=(char*)malloc(sizeof(char)*16);
+    self->p_current_block->body_str=(char*)e_mall0c(__FUNCTION__,sizeof(char)*16);
 
     ELOG("DEBUG : [elite_tetris_construct] self->p_current_block->body_str=%p\n",(void*)self->p_current_block->body_str);
     ;
@@ -482,7 +482,7 @@ void elite_tetris_advance(elite_tetris_t *self){
               elite_tetris_consolidate_block(self,self->p_current_block);
               elite_tetris_remove_and_consolidate_lines(self);
               self->game_over=true;
-              sprintf(result_str,"INFO [elite_tetris_resself_et_block] Game over! Lines cleared : %i\n",self->lines_cleared_count);
+              sprintf(result_str,"INFO [elite_tetris_reset_block] Game over! Lines cleared : %i\n",self->lines_cleared_count);
               ELOG(result_str);
 
               self->sum_lines_cleared+=self->lines_cleared_count;
@@ -648,21 +648,23 @@ bool elite_tetris_on_user_destroy(void* params){
   return true;
 };
 
+elite_pixel_game_config_t elite_tetris_config={
+    .app_name="elite_tetris",
+    .screen_width=10,
+    .screen_height=30,
+    .on_user_construct=(void*)&elite_tetris_construct,
+    .on_user_update=&elite_tetris_on_user_update,
+    .on_user_destroy=&elite_tetris_on_user_destroy
+};
+
 void elite_tetris_start_task(){
 
     ELOG("INFO : [main_start_pixel_game_task] entered main_start_pixelapp_task\n");
 
     ELOG("INFO : [main_start_pixel_game_task] creating &pixel_game_task\n");
 
-    elite_pixel_game_config_t pixel_game_config={
-        .app_name="elite_tetris",
-        .screen_width=10,
-        .screen_height=30,
-        .on_user_construct=(void*)&elite_tetris_construct,
-        .on_user_update=&elite_tetris_on_user_update,
-        .on_user_destroy=&elite_tetris_on_user_destroy
-    };
-    xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 8192,&pixel_game_config, 5, NULL);
+
+    xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 8192,&elite_tetris_config, 5, NULL);
     ELOG("INFO : [tetris_start_pixelapp_task] leaving tetris_start_pixelapp_task\n");
 
 

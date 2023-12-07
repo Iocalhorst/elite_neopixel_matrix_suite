@@ -1088,7 +1088,7 @@ static void list_defines_add(
             &defines->define_count,
             &defines->define_capacity);
     define->name = name;
-    define->values = malloc(sizeof(intmax_t));
+    define->values = e_mall0c(__FUNCTION__,sizeof(intmax_t));
     define->values[0] = value;
     define->value_count = 1;
     define->value_capacity = 1;
