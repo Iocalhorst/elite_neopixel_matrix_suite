@@ -250,7 +250,7 @@ udp_display_addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
 
     while (true) {
         if (elite_theres_a_pixel_game_running==true) {
-            xStreamBufferReceive(mr_displays_global_inputstream_handle,self->p_input_framebuf,self->p_input_framebuf_size,5000/portTICK_PERIOD_MS);
+            xStreamBufferReceive(mr_displays_global_inputstream_handle,self->p_input_framebuf,self->p_input_framebuf_size,1000/portTICK_PERIOD_MS);
         };
 
 
@@ -310,7 +310,8 @@ udp_display_addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
 
         elite_display_update_leds(self);
         xSemaphoreGive(displaySemaphore);
-        vTaskDelay(5/portTICK_PERIOD_MS);
+
+        vTaskDelay(5/portTICK_PERIOD_MS);//it sucks but things behave weird and asynchronously
     };
     vTaskDelete(NULL);
 };
@@ -351,11 +352,11 @@ void elite_display_gamma_down(elite_display_t* self){
 elite_display_t* elite_display_create_default(){
 
       elite_display_config_t elite_display_config={
-            .brightness=display_settings_default_mid.brightness,
-            .fgamma=display_settings_default_mid.fgamma,
-            .color_correction_r=display_settings_default_mid.col_correction_coeffs[0],
-            .color_correction_g=display_settings_default_mid.col_correction_coeffs[1],
-            .color_correction_b=display_settings_default_mid.col_correction_coeffs[2],
+            .brightness=display_settings_default_high.brightness,
+            .fgamma=display_settings_default_high.fgamma,
+            .color_correction_r=display_settings_default_high.col_correction_coeffs[0],
+            .color_correction_g=display_settings_default_high.col_correction_coeffs[1],
+            .color_correction_b=display_settings_default_high.col_correction_coeffs[2],
             .height=30,
             .width=10,
             .fps=24

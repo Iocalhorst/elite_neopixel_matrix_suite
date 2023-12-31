@@ -7,6 +7,8 @@
 #include "elite_tetris_agent.h"
 #include "elite_tetris_block.h"
 #include "elite_colors.h"
+
+#define Q_DEF
 /*
 typedef struct {
    char *body_str;
@@ -45,25 +47,25 @@ typedef struct {
 }elite_tetris_t;
 
 
-elite_tetris_t* elite_elite_tetris_construct(elite_pixel_game_t* ente);
+Q_DEF elite_tetris_t* elite_tetris_construct(elite_pixel_game_t* ente);
 //bool elite_tetris_rotate_block_l(elite_tetris_block_t* p_block);
 //bool elite_tetris_rotate_block_r(elite_tetris_block_t* p_block);
-bool elite_tetris_move_block(elite_tetris_t *self,const char key);
-void elite_tetris_handle_key(elite_tetris_t *self,const char key);
-void elite_tetris_reset_block(elite_tetris_block_t* p_block);
-void elite_tetris_draw_playfield(elite_tetris_t *self,elite_pixel_game_t* ente);
-void elite_tetris_draw_block(elite_tetris_t *self,elite_pixel_game_t* ente,elite_tetris_block_t* p_block);
-bool elite_tetris_check_for_collision(elite_tetris_t *self,elite_tetris_block_t *block);
-void elite_tetris_consolidate_block(elite_tetris_t *self,elite_tetris_block_t *p_block);
-void elite_tetris_remove_and_consolidate_lines(elite_tetris_t *self);
+//Q_DEF bool elite_tetris_move_block(elite_tetris_t *self,const char key);
+Q_DEF void elite_tetris_handle_key(elite_tetris_t *self,const char key);
+Q_DEF void elite_tetris_reset_block(elite_tetris_block_t* p_block);
+Q_DEF void elite_tetris_draw_playfield(elite_tetris_t *self,elite_pixel_game_t* ente);
+Q_DEF void elite_tetris_draw_block(elite_tetris_t *self,elite_pixel_game_t* ente,elite_tetris_block_t* p_block);
+Q_DEF bool elite_tetris_check_for_collision(elite_tetris_t *self,elite_tetris_block_t *block);
+Q_DEF void elite_tetris_consolidate_block(elite_tetris_t *self,elite_tetris_block_t *p_block);
+Q_DEF void elite_tetris_remove_and_consolidate_lines(elite_tetris_t *self);
 //bool elite_tetris_handle_command_string(elite_tetris_t *self,const char* cmd);
-void elite_tetris_advance(elite_tetris_t *self);
-void elite_tetris_reset_game(elite_tetris_t *self);
-bool elite_tetris_on_user_update(void* vp_self,elite_pixel_game_t* ente,float fElapsedTime);
+Q_DEF void elite_tetris_advance(elite_tetris_t *self);
+Q_DEF void elite_tetris_reset_game(elite_tetris_t *self);
+Q_DEF bool elite_tetris_on_user_update(void* vp_self,elite_pixel_game_t* ente,float fElapsedTime);
 
+/*
 
-
-void print_playfield_checksum(elite_tetris_t*self){
+Q_DEF void print_playfield_checksum(elite_tetris_t*self){
 
   int playfield_checksum=0;
   for (int i=0;i<10;i++){
@@ -75,9 +77,8 @@ void print_playfield_checksum(elite_tetris_t*self){
   //;
   //
 };
-
-
-elite_tetris_t* elite_tetris_construct(elite_pixel_game_t* ente){
+*/
+Q_DEF elite_tetris_t* elite_tetris_construct(elite_pixel_game_t* ente){
 
     ELOG("INFO : [elite_tetris_construct] entering elite_tetris_construct()\n");
 
@@ -132,13 +133,25 @@ elite_tetris_t* elite_tetris_construct(elite_pixel_game_t* ente){
     };
 
     self->game_over=false;
+    self->p_agent=NULL;
     self->p_agent=elite_tetris_agent_construct();
+    if (self->p_agent==NULL) {
+        ELOG("ERROR : [%s] constructer agent fail\n",__FUNCTION__);
+        elite_panic(__FUNCTION__,"constructor fail",__LINE__);
+        ELITE_CHECK(__FUNCTION__);
+    };
     ELOG("INFO : [elite_tetris_construct] constructed agent\n");
 
 
     elite_tetris_agent_set_keystroke_intervall(self->p_agent,self->tick_intervall);
-
+    self->p_current_block=NULL;
     self->p_current_block=(elite_tetris_block_t*)e_mall0c(__FUNCTION__,sizeof(elite_tetris_block_t));
+    if (self->p_current_block==NULL) {
+      ELOG("ERROR : [%s] malloc fail\n",__FUNCTION__);
+      elite_panic(__FUNCTION__,"constructor fail",__LINE__);
+
+    };
+    ELITE_CHECK(__FUNCTION__);
     ELOG("INFO : [elite_tetris_construct] allocating self->current_block\n");
 
 
@@ -152,13 +165,15 @@ elite_tetris_t* elite_tetris_construct(elite_pixel_game_t* ente){
 
     ELOG("INFO : [elite_tetris_construct] allocating self->current_block->body_str\n");
 
-    self->p_current_block->body_str=(char*)e_mall0c(__FUNCTION__,sizeof(char)*16);
+    self->p_current_block->body_str=(char*)e_mall0c(__FUNCTION__,sizeof(char)*(MAX_TETRIS_BLOCK_BODY_STR_LEN+1));//+1 cause logging/printf needs c_str 0byte terminator;
+    self->p_current_block->body_str[MAX_TETRIS_BLOCK_BODY_STR_LEN]=0;
 
     ELOG("DEBUG : [elite_tetris_construct] self->p_current_block->body_str=%p\n",(void*)self->p_current_block->body_str);
     ;
 
 
-    for (int i=0;i<16;i++) self->p_current_block->body_str[i]='_';
+    for (int i=0;i<MAX_TETRIS_BLOCK_BODY_STR_LEN;i++) self->p_current_block->body_str[i]='_';
+    self->p_current_block->body_str[MAX_TETRIS_BLOCK_BODY_STR_LEN]=0;
 
     ELOG("DEBUG : [elite_tetris_construct] self->p_current_block->body_str==%s\n",self->p_current_block->body_str);
     ;
@@ -216,7 +231,7 @@ elite_tetris_t* elite_tetris_construct(elite_pixel_game_t* ente){
 */
 
 
-void elite_tetris_reset_block(elite_tetris_block_t* p_block){
+Q_DEF void elite_tetris_reset_block(elite_tetris_block_t* p_block){
 
 
     char* tetromino_chars="OJLTIZS";
@@ -366,7 +381,7 @@ void elite_tetris_reset_block(elite_tetris_block_t* p_block){
   self->lines_cleared_count=0;
 */
 
-void elite_tetris_draw_playfield(elite_tetris_t *self,elite_pixel_game_t* ente){
+Q_DEF void elite_tetris_draw_playfield(elite_tetris_t *self,elite_pixel_game_t* ente){
     for (int y=0;y<30;y++) {
         for (int x=0;x<10;x++) {
             sfRGBA color;
@@ -379,7 +394,7 @@ void elite_tetris_draw_playfield(elite_tetris_t *self,elite_pixel_game_t* ente){
 };
 
 
-void elite_tetris_draw_block(elite_tetris_t* self,elite_pixel_game_t*ente,elite_tetris_block_t *p_block){
+Q_DEF void elite_tetris_draw_block(elite_tetris_t* self,elite_pixel_game_t*ente,elite_tetris_block_t *p_block){
 
     sfRGBA color=self->color_maps[1][p_block->color_index];
     for (int y=0;y<p_block->height;y++) {
@@ -391,9 +406,9 @@ void elite_tetris_draw_block(elite_tetris_t* self,elite_pixel_game_t*ente,elite_
     };
 };
 
-bool elite_tetris_check_for_collision_loop_enter_once_log=false;
-bool elite_tetris_check_for_collision_loop_leave_once_log=false;
-bool elite_tetris_check_for_collision(elite_tetris_t *self,elite_tetris_block_t *p_block){
+Q_DEF bool elite_tetris_check_for_collision_loop_enter_once_log=false;
+Q_DEF bool elite_tetris_check_for_collision_loop_leave_once_log=false;
+Q_DEF bool elite_tetris_check_for_collision(elite_tetris_t *self,elite_tetris_block_t *p_block){
 
   if (p_block==NULL) {
       ELOG("DEBUG : [elite_tetris_check_for_collision] assertion fail(block!=null)\n");
@@ -429,7 +444,7 @@ bool elite_tetris_check_for_collision(elite_tetris_t *self,elite_tetris_block_t 
     return false;
 };
 
-void elite_tetris_consolidate_block(elite_tetris_t* self,elite_tetris_block_t *p_block){
+Q_DEF void elite_tetris_consolidate_block(elite_tetris_t* self,elite_tetris_block_t *p_block){
     for (int i=0;i<p_block->height;i++){
         for (int j=0;j<p_block->width;j++){
             int x=j+p_block->x;
@@ -441,7 +456,7 @@ void elite_tetris_consolidate_block(elite_tetris_t* self,elite_tetris_block_t *p
     };
 };
 
-void elite_tetris_remove_and_consolidate_lines(elite_tetris_t *self){
+Q_DEF void elite_tetris_remove_and_consolidate_lines(elite_tetris_t *self){
     for (int y=0;y<30;y++) {
         int result=1;
         for (int x=0;x<10;x++) {
@@ -458,7 +473,7 @@ void elite_tetris_remove_and_consolidate_lines(elite_tetris_t *self){
     };
 };
 
-void elite_tetris_advance(elite_tetris_t *self){
+Q_DEF void elite_tetris_advance(elite_tetris_t *self){
     //self->p_current_block->y+=1;
     //ELOG("DEBUG : [elite_tetris_advance ] entered\n");
     //
@@ -503,7 +518,7 @@ void elite_tetris_advance(elite_tetris_t *self){
 
 };
 
-void elite_tetris_reset_game(elite_tetris_t *self){
+Q_DEF void elite_tetris_reset_game(elite_tetris_t *self){
   //  ELOG("INFO : [elite_tetris_construct] initializing playfield[30][10]\n");
   //
 
@@ -532,7 +547,7 @@ void elite_tetris_reset_game(elite_tetris_t *self){
 
 
 
-void elite_tetris_handle_key(elite_tetris_t *self,char key){
+Q_DEF void elite_tetris_handle_key(elite_tetris_t *self,char key){
 
     if (key=='u') {
       elite_tetris_block_rotate_l(self->p_current_block);
@@ -565,11 +580,11 @@ void elite_tetris_handle_key(elite_tetris_t *self,char key){
 
 };
 
-bool elite_tetris_on_user_update_entered_log=false;
-bool elite_tetris_on_user_update_leaving_log=false;
-bool elite_tetris_on_user_update_pre_particle_shower_update_log=false;
+Q_DEF bool elite_tetris_on_user_update_entered_log=false;
+Q_DEF bool elite_tetris_on_user_update_leaving_log=false;
+//Q_DEF bool elite_tetris_on_user_update_pre_particle_shower_update_log=false;
 
-bool elite_tetris_on_user_update(void* vp_self,elite_pixel_game_t* ente,float fElapsedTime){
+Q_DEF bool elite_tetris_on_user_update(void* vp_self,elite_pixel_game_t* ente,float fElapsedTime){
       if (elite_tetris_on_user_update_entered_log==false) {
           elite_tetris_on_user_update_entered_log=true;
 
@@ -625,7 +640,7 @@ bool elite_tetris_on_user_update(void* vp_self,elite_pixel_game_t* ente,float fE
 };
 
 
-bool elite_tetris_on_user_destroy(void* params){
+Q_DEF bool elite_tetris_on_user_destroy(void* params){
 
     ELOG("INFO : [elite_tetris_on_user_destroy] entering elite_tetris_on_user_destroy()\n");
 

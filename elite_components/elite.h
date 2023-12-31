@@ -57,7 +57,7 @@ bool eliteAssert(bool ok,const char* msg);
 #define ELITE_STATE_OK 0
 static uint8_t elite_state=0;
 //void el0g(const char* )const char
-#define ELOG(...) do {char str[512]={0};sprintf(str,__VA_ARGS__);str[511]=0;el0g(str);vTaskDelay(100/portTICK_PERIOD_MS);}while(0)
+#define ELOG(...) do {char str[512]={0};sprintf(str,__VA_ARGS__);str[511]=0;el0g(str);vTaskDelay(10/portTICK_PERIOD_MS);}while(0)
 #define NEVERMIND(X) do {(void)X;}while(0)
 #define ELITE_CHECK(MSG) do{if (elite_state!=0){ELOG("DEBUG : [%s] trapped due to elite_panic state\n",MSG);for(;;)vTaskDelay(portMAX_DELAY);ELOG("DEBUG : UNREACHABLE");}} while(0)
 
@@ -84,7 +84,7 @@ void el0g(const char* s){
     xSemaphoreGive(xHighlander);
 };
 
-void elite_panic(const char* func_name,const char* reason_str,int line_n){
+void elite_panic(const char* func_name,const char* reason_str,const int line_n){
   ELOG("FATAL ERROR : [%s] triggerd panic cause of %s in line %i\n",func_name,reason_str,line_n);
   elite_state=ELITE_STATE_PANIC;
 };

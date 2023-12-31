@@ -1,5 +1,9 @@
-//theres bloody race condition bugs all over the place
-//if you remove the 2 elog lines in elite_tetris_agent_construct it stops working ... wtf
+//theres a heisenbug going on with the elite_tetris_agent.
+//sometimes it seems to just not "want to play" which is fair enough i guess. but i cant leave it uncommented obv.
+//it seems to trigger when there was very little "idle" time before running the "tetris" command. little means less than 5s
+//doesnt matter if its a fresh reboot or after starting/stopping other animations via successive commands
+//it goes away when i try to track it down with debug/log statements. 
+//bummer!
 
 #define TAG "EliteProject"
 

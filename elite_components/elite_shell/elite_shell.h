@@ -13,6 +13,7 @@
 #include "line_of_sight_demo.h"
 #include "elite_pinball.h"
 #include "elite_snake.h"
+#include "elite_fireworks.h"
 #include "tetr1s_reloaded.h"
 #include "elite_matrix_rain.h"
 #include "elite_io.h"
@@ -119,8 +120,18 @@ bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, siz
   if (cmd==0&&!strcmp(buf,"mouse\n\0"))cmd=22;
   if (cmd==0&&!strcmp(buf,"tetr1s\n\0"))cmd=23;
   if (cmd==0&&!strcmp(buf,"matrix\n\0"))cmd=24;
+  if (cmd==0&&!strcmp(buf,"fps+\n\0"))cmd=25;
+  if (cmd==0&&!strcmp(buf,"fps-\n\0"))cmd=26;
   if (cmd==0&&!strcmp(buf,"test\n\0"))cmd=42;
+  if (cmd==0&&!strcmp(buf,"d+\n\0"))cmd=100;
+  if (cmd==0&&!strcmp(buf,"d-\n\0"))cmd=101;
+  if (cmd==0&&!strcmp(buf,"p+\n\0"))cmd=102;
+  if (cmd==0&&!strcmp(buf,"p-\n\0"))cmd=103;
+  if (cmd==0&&!strcmp(buf,"s+\n\0"))cmd=104;
+  if (cmd==0&&!strcmp(buf,"s-\n\0"))cmd=105;
+  if (cmd==0&&!strcmp(buf,"fireworks\n\0"))cmd=106;
   if (cmd==0&&!strcmp(buf,"panic\n\0"))cmd=9001;
+
 
   if (cmd>0) self->last_cmd=cmd;
   char* wtf_str="wtf?\n";
@@ -259,11 +270,37 @@ bool elite_shell_handle_input(elite_shell_t* self,int outfd,const char* buf, siz
         };
         break;
     };
+    case 25 : {
+        if(ente_fps<60.0f) {ente_fps+=1.0f;};
+        ELOG("DEBUG : [%s] fps==%f\n",__FUNCTION__,ente_fps);
+        break;
+        };
+
+    case 26 : {
+        if(ente_fps>10.0) {ente_fps-=1.0f;};
+        ELOG("DEBUG : [%s] fps==%f\n",__FUNCTION__,ente_fps);
+        break;
+    };
     case 42 : {
 //      if (mr_mouse_global_handle!=NULL) free(mr_mouse_global_handle);
       ELOG("TEST\n");
       break;
     };
+
+    case 100 : {drift+=0.15f;ELOG("DEBUG : drift=%f phase_offset=%f scale=%f\n",(double)drift,(double)phase_offset,(double)scale);break;};
+    case 101 : {drift-=0.15f;ELOG("DEBUG : drift=%f phase_offset=%f scale=%f\n",(double)drift,(double)phase_offset,(double)scale);break;};
+    case 102 : {phase_offset+=0.05f;ELOG("DEBUG : drift=%f phase_offset=%f scale=%f\n",(double)drift,(double)phase_offset,(double)scale);break;};
+    case 103 : {phase_offset-=0.05f;ELOG("DEBUG : drift=%f phase_offset=%f scale=%f\n",(double)drift,(double)phase_offset,(double)scale);break;};
+    case 104 : {scale+=0.1f;ELOG("DEBUG : drift=%f phase_offset=%f scale=%f\n",(double)drift,(double)phase_offset,(double)scale);break;};
+    case 105 : {scale-=0.1f;ELOG("DEBUG : drift=%f phase_offset=%f scale=%f\n",(double)drift,(double)phase_offset,(double)scale);break;};
+
+    case 106 : {
+        if(elite_theres_a_pixel_game_running==false&&elite_kill_pixel_game==false){
+            elite_fireworks_start_task();
+        };
+        break;
+    };
+
     case 9001 : {
 //      if (mr_mouse_global_handle!=NULL) free(mr_mouse_global_handle);
       ELOG("DEBUG : [elite_shell_handle_input] panic triggerd\n");

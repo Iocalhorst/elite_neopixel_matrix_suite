@@ -13,6 +13,8 @@ typedef struct {
   int x;
 }resultset_t;
 
+
+
 typedef struct{
 
           uint8_t test_view[10][30];//temporary, volatile copy of the playfield. used for simulating hard drops,
@@ -25,6 +27,7 @@ typedef struct{
           float f_keystroke_intervall;//=0.5f;
           //LinkedList<sResultSet> listResults;
           float f_fuse;
+
 }elite_tetris_agent_t;
 
 elite_tetris_agent_t* elite_tetris_agent_construct();
@@ -56,9 +59,9 @@ elite_tetris_agent_t* elite_tetris_agent_construct(){
   //self->listResults=LinkedList<sResultSet>();
   self->f_keystroke_intervall=0.25f;
   self->p_backup_block=(elite_tetris_block_t*)e_mall0c(__FUNCTION__,sizeof(elite_tetris_block_t));
-  self->p_backup_block->body_str=(char*)e_mall0c(__FUNCTION__,16);
+  self->p_backup_block->body_str=(char*)e_mall0c(__FUNCTION__,MAX_TETRIS_BLOCK_BODY_STR_LEN);
   self->p_test_block=(elite_tetris_block_t*)e_mall0c(__FUNCTION__,sizeof(elite_tetris_block_t));
-  self->p_test_block->body_str=(char*)e_mall0c(__FUNCTION__,16);
+  self->p_test_block->body_str=(char*)e_mall0c(__FUNCTION__,MAX_TETRIS_BLOCK_BODY_STR_LEN);
 
 //  ELOG("DEBUG : [elite_tetris_agent_construct] exit\n");
   return self;
@@ -68,42 +71,38 @@ char elite_tetris_agent_get_key(elite_tetris_agent_t* self,float fElapsedTime,el
 
 //    ELOG("DEBUG : [elite_tetris_agent_read_game_state] return null\n");
     //
-    self->f_fuse-=fElapsedTime;
+
 
     if (self->f_fuse>0.0f) {
+      self->f_fuse-=fElapsedTime;
+
 //      ELOG("DEBUG : [elite_tetris_agent_read_game_state] return null\n");
       //
       return '\0';}
     else {
         self->f_fuse=self->f_keystroke_intervall;
         if (self->best_result_rotation_count>0) {
-          //ELOG("DEBUG : [elite_tetris_agent_get_key_game_state] return 'u'\n");
-          //
-          self->best_result_rotation_count-=1;
-          //ELOG("rotate l\n");
-          //
-          return 'u';
+            self->best_result_rotation_count-=1;
+            return 'u';
+        }else{
+            if (p_current_block->x>self->best_result_x) {
+                return 'l';
+            }else{
+                if (p_current_block->x<self->best_result_x) {
+                    return 'r';
+                }else
+                if (p_current_block->x==self->best_result_x&&self->best_result_rotation_count==0){
+                    return 'd';
+                }else{
+                  ELOG("DEBUG : [%s] UNREACHABLE\n",__FUNCTION__);
+                      return 42;
+                }
+            };
         };
-        if (p_current_block->x>self->best_result_x) {
-          //ELOG("DEBUG : [elite_tetris_agent_get_key] return 'l'\n");
-          //
-          return 'l';
-        }
-        if (p_current_block->x<self->best_result_x) {
-          //ELOG("DEBUG : [elite_tetris_agent_get_key] return 'r'\n");
-          //
-          return 'r';
-        };
-      //  if (self->best_result_x==p_current_block->x&&self->best_result_rotation_count==0) {
-          //ELOG("DEBUG : [elite_tetris_agent_get_key] return 'd'\n");
-          //
-        //  self->f_fuse=0.15f*self->f_keystroke_intervall;
-        //  return 'd';
-        //};
     };
-    //    ELOG("ERROR : [elite_tetris_agent_get_key] UNREACHABLE\n");
-    //
-        return 42;
+
+    ELOG("DEBUG : [%s] EVEN MORE UNREACHABLE\n",__FUNCTION__);
+        return 69;
 };
 
 void elite_tetris_agent_read_game_state(elite_tetris_agent_t* self,uint8_t p_playfield[10][30],elite_tetris_block_t* p_current_block){
@@ -129,7 +128,8 @@ void elite_tetris_agent_read_game_state(elite_tetris_agent_t* self,uint8_t p_pla
     self->p_backup_block->x=p_current_block->x;
     self->p_backup_block->y=p_current_block->y;
 
-    for (int i=0;i<16;i++) self->p_backup_block->body_str[i]=p_current_block->body_str[i];
+    for (int i=0;i<MAX_TETRIS_BLOCK_BODY_STR_LEN;i++) self->p_backup_block->body_str[i]=p_current_block->body_str[i];
+
 
     /*ELOG("DEBUG : [elite_tetris_agent_read_game_state] \n p_backup_block->x==%i\n p_backup_block->y==%i\n",self->p_backup_block->x,self->p_backup_block->y);
 
@@ -191,7 +191,7 @@ void elite_tetris_agent_restore_test_block(elite_tetris_agent_t* self){
     self->p_test_block->y=self->p_backup_block->y;
     self->p_test_block->width=self->p_backup_block->width;
     self->p_test_block->height=self->p_backup_block->height;
-    for (int i=0;i<16;i++) {
+    for (int i=0;i<MAX_TETRIS_BLOCK_BODY_STR_LEN;i++) {
       self->p_test_block->body_str[i]=self->p_backup_block->body_str[i];
     };
 };

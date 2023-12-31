@@ -26,3 +26,10 @@ display_settings_t display_settings_default_mid={
   .brightness=0.09f,
   .col_correction_coeffs={1.0f,1.0f,1.0f}
 };
+display_settings_t display_settings_default_high={
+  .ctx="default",
+  .name_str="high",
+  .fgamma=0.84f,
+  .brightness=0.3f,
+  .col_correction_coeffs={1.0f,1.0f,1.0f}
+};

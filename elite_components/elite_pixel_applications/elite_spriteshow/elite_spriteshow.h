@@ -616,7 +616,7 @@ void spriteshow_start_task(){
     ELOG("INFO : [main_start_pixel_game_task] creating &pixel_game_task\n");
 
 
-    xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 4096,&elite_spriteshow_config, 5, NULL);
+    xTaskCreate(&elite_pixel_game_task, "elite_pixel_game_task", 2*4096,&elite_spriteshow_config, 5, NULL);
     ELOG("INFO : [main_start_pixelapp_task] leaving main_start_pixelapp_task\n");
 
 

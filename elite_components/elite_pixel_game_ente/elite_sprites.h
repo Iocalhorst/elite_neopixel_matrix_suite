@@ -49,9 +49,10 @@ typedef struct {
 
 //todo : int elite_err_t elite_sprite_load_bla();
 bool elite_sprite_load(elite_sprite_t *self){
-  if (self==NULL) return false;
+  ELOG("DEBUG : [%s] enter\n",__FUNCTION__);
+  if (self==NULL) {ELOG("FATAL : [%s] nullptr\n",__FUNCTION__);return false;};
   if (self->load_failed) return false;
-  
+
   char file_path[138]={0};
   const char *base_path="/littlefs";
   sprintf(file_path,"%s/%s",base_path,self->url);
@@ -59,35 +60,35 @@ bool elite_sprite_load(elite_sprite_t *self){
   if (f==NULL) {
     //todo : verbose error message : invalid filename, file doesnt exist, readError
     ELOG("ERROR : [elite_sprite_load] could not open <%s> for reading\n",file_path);
-    
-    
+
+
   return false;
 }else {
   //todo : verbose error message : invalid filename, file doesnt exist, readError
   ELOG("INFO : [elite_sprite_load] opened <%s> for reading\n",file_path);
-  
-  
+
+
 
 };
 
   if (self->_p_bitmap!=NULL) {
     ELOG("INFO : [elite_sprite_load] overwriting data at self->p_bitmap\n");
-    
+
     }else {
       size_t _p_bitmap_size=sizeof(sRGB)*self->height*self->width;
       self->_p_bitmap=(sRGB*)e_mall0c(__FUNCTION__,_p_bitmap_size);
       if (self->_p_bitmap==NULL) {
         ELOG("ERROR : [elite_sprite_load] e_mall0c fail\n");
-        
+
         err_t fclose_ret=fclose(f);
         ELOG("DEBUG : [elite_sprite_load] fclose() fclose_ret=%i\n",fclose_ret);
-        
-        
+
+
         return false;
       }else{
         ELOG("DEBUG : [elite_sprite_load] e_mall0c(__FUNCTION__,%dd)==%p success\n",_p_bitmap_size,(void *)&self->_p_bitmap);
-        
-        
+
+
       };
     };
 
@@ -98,21 +99,21 @@ bool elite_sprite_load(elite_sprite_t *self){
       ELOG("DEBUG : [elite_sprite_load] free(self->_p_bitmap)");
       fclose(f);
       ELOG("ERROR : [elite_sprite_load] fread() fail\n");
-      
+
       return false;
   }else {
       int fclose_ret=fclose(f);
       ELOG("DEBUG : [elite_sprite_load] fclose() fclose_ret=%i\n",fclose_ret);
-      
-      
+
+
       ELOG("DEBUG : [elite_sprite_load] fread()==%i bytes, which is a great success\n",num_bytes_read);
-      
-      
+
+
       uint32_t checksum=0l;
       for (int i=0;i<100;i++) {checksum+=self->_p_bitmap[i].r;checksum+=self->_p_bitmap[i].g;checksum+=self->_p_bitmap[i].b;};
       ELOG("DEBUG : [elite_sprite_load] checksum=%lu\n",checksum);
-      
-      
+
+
 
   }
 
@@ -120,16 +121,16 @@ bool elite_sprite_load(elite_sprite_t *self){
 
 
   ELOG("DEBUG : [elite_sprite_load] leaving elite_sprite_load, true\n");
-  
+
   return true;
 
 };
 
 
 elite_sprite_t *elite_sprite_construct(elite_sprite_config_t config){
-    
+
     ELOG("INFO : [spriteshow_construct] entering elite_sprite_construct()\n");
-    
+
 
     elite_sprite_t *self=(elite_sprite_t*)e_mall0c(__FUNCTION__,sizeof(elite_sprite_t));
     memset(&self->url, 0, sizeof(self->url));
@@ -137,45 +138,45 @@ elite_sprite_t *elite_sprite_construct(elite_sprite_config_t config){
 
     self->height=config.height;
     ELOG("DEBUG : [elite_sprite_construct] self->height=%ul\n",self->height);
-    
-    
+
+
     self->width=config.width;
     ELOG("DEBUG : [elite_sprite_construct] self->width=%ul\n",self->width);
-    
-    
+
+
     self->load_immediatly=config.load_immediatly;
     ELOG("DEBUG : [elite_sprite_construct] self->load_immediatly=%b\n",self->load_immediatly);
-    
-    
+
+
     self->load_failed=false;
     ELOG("DEBUG : [elite_sprite_construct] self->load_failed=false\n");
-    
-    
+
+
     self->_p_bitmap=NULL;
     ELOG("DEBUG : [elite_sprite_construct] self->_p_bitmap=nullptr\n");
-    
-    
+
+
 
     if (self->load_immediatly==true) {
         ELOG("DEBUG : [elit_sprite_construct] load_immediatly==true, calling elite_sprite_load(self)\n");
-        
+
         if (elite_sprite_load(self)) {
             ELOG("INFO : [elite_sprite_construct] loaded sprite from file <%s> loaded\n",self->url);
-            
-            
+
+
         }else {
             ELOG("ERROR : [elite_sprite_construct] elite_sprite_load(self) failed\n");
-            
-            
+
+
         };
     }else {
         ELOG("DEBUG : [elit_sprite_construct] load_immediatly==false, skipping elite_sprite_load(self)\n");
-        
+
     };
 
     //if (self->load_immediatly) self->load_failed=elite_sprite_load(self);
     ELOG("DEBUG : [elite_sprite_construct] leaving elite_sprite_construct()\n");
-    
+
 
     return self;
 };

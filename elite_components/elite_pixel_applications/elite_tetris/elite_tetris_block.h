@@ -1,4 +1,7 @@
 #pragma once
+#define MAX_SPACE_BLOCK_BODY_STR_LEN 145
+#define MAX_TETRIS_BLOCK_BODY_STR_LEN 145
+
 typedef struct {
    char *body_str;
    int x;
@@ -13,7 +16,7 @@ typedef struct {
 
      if (!((p_block->width==3&&p_block->height==3)||(p_block->width==4&&p_block->height==4))) return;
 
-     char tmp_str[16]={0};
+     char tmp_str[MAX_TETRIS_BLOCK_BODY_STR_LEN]={0};
 
      for (int i=0;i<p_block->height*p_block->width;i++){
        tmp_str[i]=p_block->body_str[i];
@@ -59,7 +62,7 @@ typedef struct {
 
      if (!((p_block->width==3&&p_block->height==3)||(p_block->width==4&&p_block->height==4))) return;
 
-     char tmp_str[16]={0};
+     char tmp_str[MAX_TETRIS_BLOCK_BODY_STR_LEN]={0};
 
      for (int i=0;i<p_block->height*p_block->width;i++){
        tmp_str[i]=p_block->body_str[i];
@@ -99,130 +102,4 @@ typedef struct {
 
      };
 
- };
-
-
-
- void elite_tetris_block_create(elite_tetris_block_t* p_block,char c_block){
-
-
-     char* tetromino_chars="OJLTIZS";
-     bool is_valid_char=false;
-     for (int i=0;i<strlen(tetromino_chars);i++) {
-       if (c_block==tetromino_chars[i]) {is_valid_char=true;break;};
-     };
-     if (is_valid_char!=true) {
-       ELOG("ERROR : [elite_tetris_block_create] invalid arg c_block\n");
-       elite_panic(__FUNCTION__,"invalid arg c_block",__LINE__);
-     };
-     ELITE_CHECK(__FUNCTION__);
-
-     if (p_block==NULL) {
-        ELOG("ERROR : [elite_tetris_block_create] invalid arg p_block==NULL\n");
-        elite_panic(__FUNCTION__,"nullptr p_block",__LINE__);
-     };
-     ELITE_CHECK(__FUNCTION__);
-
-
-     switch (c_block) {
-
-     case 'O' : {
-         p_block->width=4;
-         p_block->height=4;
-         p_block->color_index=1;
-         char tmp[16]="____"
-                      "_11_"
-                      "_11_"
-                      "____";
-         for (int i=0;i<p_block->width*p_block->height;i++){p_block->body_str[i]=tmp[i];};
-         break;
-     };
-
-     case 'I' : {
-         p_block->width=4;
-         p_block->height=4;
-         p_block->color_index=2;
-         char tmp[16]="__2_"
-                      "__2_"
-                      "__2_"
-                      "__2_";
-         for (int i=0;i<p_block->width*p_block->height;i++){p_block->body_str[i]=tmp[i];};
-         break;
-     };
-
-     case 'J' : {
-         p_block->width=3;
-         p_block->height=3;
-         p_block->color_index=3;
-         char tmp[9]="_3_"
-                     "_3_"
-                     "33_";
-         for (int i=0;i<p_block->width*p_block->height;i++){p_block->body_str[i]=tmp[i];};
-         break;
-     };
-
-
-     case 'L' :{
-         p_block->width=3;
-         p_block->height=3;
-         p_block->color_index=4;
-         char tmp[9]="_4_"
-                     "_4_"
-                     "_44";
-         for (int i=0;i<p_block->width*p_block->height;i++){p_block->body_str[i]=tmp[i];};
-         break;
-
-     };
-
-     case 'T' : {
-         p_block->width=3;
-         p_block->height=3;
-         p_block->color_index=5;
-         char tmp[9]="___"
-                     "555"
-                     "_5_";
-         for (int i=0;i<p_block->width*p_block->height;i++){p_block->body_str[i]=tmp[i];};
-         break;
-
-     };
-
-     case 'S' : {
-       p_block->width=3;
-       p_block->height=3;
-       p_block->color_index=6;
-       char tmp[9]="_66"
-                   "66_"
-                   "___";
-
-       for (int i=0;i<p_block->width*p_block->height;i++){p_block->body_str[i]=tmp[i];};
-       break;
-     };
-
-     case 'Z' : {
-       p_block->width=3;
-       p_block->height=3;
-       p_block->color_index=7;
-       char tmp[9]="77_"
-                   "_77"
-                   "___";
-       for (int i=0;i<p_block->width*p_block->height;i++){p_block->body_str[i]=tmp[i];};
-       break;
-     };
-
-     default : {
-       p_block->width=4;
-       p_block->height=4;
-       p_block->color_index=0;
-       char tmp[16]="____"
-                    "____"
-                    "____"
-                    "____";
-       for (int i=0;i<p_block->width*p_block->height;i++){p_block->body_str[i]=tmp[i];};
-       break;
-     };
-   };//switch
-
-
-   p_block->x=4;
-   p_block->y=0;
  };

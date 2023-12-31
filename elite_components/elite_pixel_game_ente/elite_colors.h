@@ -89,3 +89,15 @@ const sfRGBA white2={172.0f,164.0f,158.0f,255.0f};
 const sfRGBA orange2={212.0f,96.0f,8.0f,255.0f};
 const sfRGBA purple2={116.0f,8.0f,212.0f,255.0f};
 const sfRGBA black2={0.0f,0.0f,0.0f,255.0f};
+
+
+
+const sfRGBA vivid_red={255.0f,24.0f,16.0f,255.0f};
+const sfRGBA vivid_green={16.0f,255.0f,10.0f,255.0f};
+const sfRGBA vivid_blue={24.0f,16.0f,255.0f,255.0f};//pretty blue
+const sfRGBA vivid_cyan={16.0f,255.0f,232.0f,255.0f};
+const sfRGBA vivid_magenta={255.0f,16.0f,224.0f,255.0f};
+const sfRGBA vivid_yellow={255.0f,224.0f,12.0f,255.0f};
+const sfRGBA vivid_white={255.0f,224.0f,204.0f,255.0f};
+const sfRGBA vivid_orange={255.0f,102.0f,10.0f,255.0f};
+const sfRGBA vivid_purple={122.0f,12.0f,255.0f,255.0f};
