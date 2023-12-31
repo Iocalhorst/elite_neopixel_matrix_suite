@@ -8,6 +8,8 @@ https://www.youtube.com/playlist?list=PLHSZrglLne2v1WkVeYQztqZad_cIJlpPZ
 
 The purpose of this repository is to 
 
+(a-1)) reveal how badly i suck at using git. omfg
+
 a) migrate my neopixel-related arduino code base to esp-idf. its a lot of stuff. and i'd rather choose not to. but its inevitable, mr anderson.
 
 b) Implement all the fun stuff and pretty things. My inner child does not negotiate.
