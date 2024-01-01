@@ -6,8 +6,8 @@
 #define OTA_URL_SIZE 256
 
 
-#define EXAMPLE_ESP_WIFI_SSID      "wlan0"
-#define EXAMPLE_ESP_WIFI_PASS      "messwiththebestdieliketherest"
+#define EXAMPLE_ESP_WIFI_SSID      "spaceball -the access point"
+#define EXAMPLE_ESP_WIFI_PASS      "https://www.youtube.com/watch?v=_JNGI1dI-e8&pp=ygUQc3BhY2ViYWxscyAxMjM0NQ%3D%3D"
 #define EXAMPLE_ESP_MAXIMUM_RETRY  5
 
 #ifndef SOCK_TARGET_HOST
